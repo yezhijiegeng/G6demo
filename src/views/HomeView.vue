@@ -126,8 +126,8 @@ export default {
           } else {
             curShape = group.addShape('rect', {
               attrs: {
-                x,
-                y,
+                x: cfg.x || x,
+                y: cfg.y || y,
                 width: 144,
                 height: 54,
                 fill: isRoot ? '#4ea2f0' : '#fff',
@@ -150,8 +150,8 @@ export default {
           group.addShape('text', {
             attrs: {
               text: label,
-              x: 0,
-              y: 0,
+              x: cfg.x - x || 0,
+              y: cfg.y - y || 0,
               textAlign: 'center',
               textBaseline: 'middle',
               fill: isRoot ? '#fff' : '#303242',
@@ -292,13 +292,35 @@ export default {
       width: 800,
       height: 800,
       fitView: true,
+      // layout: {
+      //   type: 'dagre',
+      //   rankdir: 'TB', // 可选，默认为图的中心
+      //   // align: 'DL', // 可选
+      //   nodesep: 50, // 可选
+      //   ranksep: 40, // 可选
+      //   // controlPoints: true, // 可选
+      // },
+      // layout: {
+      //   type: "force2",
+      //   clustering: true,
+      //   clusterNodeStrength: -5,
+      //   clusterEdgDistance: 200,
+      //   clusterNodeSize: 100,
+      //   clusterFociStrength: 15,
+      //   nodeSpacing: 20,
+      //   preventOverlap: true
+      // },
+
       layout: {
-        type: 'dagre',
-        rankdir: 'TB', // 可选，默认为图的中心
-        // align: 'DL', // 可选
-        nodesep: 50, // 可选
-        ranksep: 40, // 可选
-        // controlPoints: true, // 可选
+        type: 'comboForce',
+        maxIteration: 1000,
+        gravity: 5,
+        comboGravity: 1,
+        preventOverlap: true,
+        center: [100, 100],     // 可选，默认为图的中心
+        linkDistance: 200,         // 可选，边长
+        nodeStrength: 300,         // 可选
+        edgeStrength: 0.05,        // 可选
       },
       modes: {
         default: [
@@ -324,6 +346,21 @@ export default {
       defaultEdge: {
         // 使用自定义边
         type: 'flow-line'
+      },
+      // defaultEdge: {
+      //   style: {
+      //     stroke: '#eee',
+      //     lineWidth: 1,
+      //     endArrow: {
+      //       path: G6.Arrow.vee(10, 20, 25),
+      //       d: 25
+      //     }
+      //     // ... 其他样式属性
+      //   },
+      // },
+      defaultCombo: {
+        // 使用自定义边
+        padding: 10
       },
     })
 
