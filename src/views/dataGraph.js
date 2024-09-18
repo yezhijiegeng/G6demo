@@ -3,8 +3,6 @@ const data = {
         {
             id: 'rootId',
             name: '总公司',
-            // x: 800,
-            // y: 200
         },
         {
             id: 'subTree1',

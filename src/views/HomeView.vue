@@ -292,6 +292,33 @@ export default {
       width: 800,
       height: 800,
       fitView: true,
+
+      groupByTypes: false, // 若希望在带有 combo 的图上，节点、边、combo 的层级符合常规逻辑，需要将 groupByTypes 设置为 false
+      layout: {
+        type: 'comboCombined',
+        nodeSize: 50,
+        spacing: (d) => {
+          // d is a node
+          // if (d.id === 'rootId') {
+          //   return 100;
+          // }
+          return 10;
+        },
+        outerLayout: new G6.Layout['forceAtlas2']({
+          kr: 10
+        }),
+        innerLayout: new G6.Layout['dagre']({
+          rankdir: 'TB', // 可选，默认为图的中心
+          // align: 'DL', // 可选
+          nodesep: 50, // 可选
+          ranksep: 40, // 可选
+        }),
+        // center: [200, 200],     // 可选，默认为图的中心
+        onLayoutEnd: () => {      // 可选
+          console.log('combo force layout done');
+        }
+      },
+
       // layout: {
       //   type: 'dagre',
       //   rankdir: 'TB', // 可选，默认为图的中心
@@ -310,18 +337,17 @@ export default {
       //   nodeSpacing: 20,
       //   preventOverlap: true
       // },
-
-      layout: {
-        type: 'comboForce',
-        maxIteration: 1000,
-        gravity: 5,
-        comboGravity: 1,
-        preventOverlap: true,
-        center: [100, 100],     // 可选，默认为图的中心
-        linkDistance: 200,         // 可选，边长
-        nodeStrength: 300,         // 可选
-        edgeStrength: 0.05,        // 可选
-      },
+      // layout: {
+      //   type: 'comboForce',
+      //   maxIteration: 1000,
+      //   gravity: 5,
+      //   comboGravity: 1,
+      //   preventOverlap: true,
+      //   center: [100, 100],     // 可选，默认为图的中心
+      //   linkDistance: 200,         // 可选，边长
+      //   nodeStrength: 300,         // 可选
+      //   edgeStrength: 0.05,        // 可选
+      // },
       modes: {
         default: [
           'drag-canvas',
