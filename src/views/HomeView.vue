@@ -296,14 +296,14 @@ export default {
       groupByTypes: false, // 若希望在带有 combo 的图上，节点、边、combo 的层级符合常规逻辑，需要将 groupByTypes 设置为 false
       layout: {
         type: 'comboCombined',
-        nodeSize: 50,
-        spacing: (d) => {
-          // d is a node
-          // if (d.id === 'rootId') {
-          //   return 100;
-          // }
-          return 10;
-        },
+        // nodeSize: 10,
+        // spacing: (d) => {
+        //   // d is a node
+        //   // if (d.id === 'rootId') {
+        //   //   return 100;
+        //   // }
+        //   return 10;
+        // },
         outerLayout: new G6.Layout['forceAtlas2']({
           kr: 10
         }),
