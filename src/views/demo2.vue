@@ -11,10 +11,9 @@
 
 <script>
 // @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
 import G6 from '@antv/g6';
 // import data from './data'
-import ghData from './dataGraph'
+import ghData from './dataGraph2'
 
 const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
   return [
@@ -41,9 +40,7 @@ const rootId = 'rootId';
 
 export default {
   name: 'HomeView',
-  components: {
-    HelloWorld
-  },
+  components: {},
   data() {
     return {
       searchVal: '',
@@ -126,8 +123,8 @@ export default {
           } else {
             curShape = group.addShape('rect', {
               attrs: {
-                x: cfg.x || x,
-                y: cfg.y || y,
+                x,
+                y,
                 width: 144,
                 height: 54,
                 fill: isRoot ? '#4ea2f0' : '#fff',
@@ -150,8 +147,8 @@ export default {
           group.addShape('text', {
             attrs: {
               text: label,
-              x: cfg.x - x || 0,
-              y: cfg.y - y || 0,
+              x: 0,
+              y: 0,
               textAlign: 'center',
               textBaseline: 'middle',
               fill: isRoot ? '#fff' : '#303242',
@@ -292,62 +289,14 @@ export default {
       width: 800,
       height: 800,
       fitView: true,
-
-      groupByTypes: false, // 若希望在带有 combo 的图上，节点、边、combo 的层级符合常规逻辑，需要将 groupByTypes 设置为 false
       layout: {
-        type: 'comboCombined',
-        // nodeSize: 10,
-        // spacing: (d) => {
-        //   // d is a node
-        //   // if (d.id === 'rootId') {
-        //   //   return 100;
-        //   // }
-        //   return 10;
-        // },
-        outerLayout: new G6.Layout['forceAtlas2']({
-          kr: 10
-        }),
-        innerLayout: new G6.Layout['dagre']({
-          rankdir: 'TB', // 可选，默认为图的中心
-          // align: 'DL', // 可选
-          nodesep: 50, // 可选
-          ranksep: 40, // 可选
-        }),
-        // center: [200, 200],     // 可选，默认为图的中心
-        onLayoutEnd: () => {      // 可选
-          console.log('combo force layout done');
-        }
+        type: 'dagre',
+        rankdir: 'TB', // 可选，默认为图的中心
+        // align: 'DL', // 可选
+        nodesep: 50, // 可选
+        ranksep: 40, // 可选
+        // controlPoints: true, // 可选
       },
-
-      // layout: {
-      //   type: 'dagre',
-      //   rankdir: 'TB', // 可选，默认为图的中心
-      //   // align: 'DL', // 可选
-      //   nodesep: 50, // 可选
-      //   ranksep: 40, // 可选
-      //   // controlPoints: true, // 可选
-      // },
-      // layout: {
-      //   type: "force2",
-      //   clustering: true,
-      //   clusterNodeStrength: -5,
-      //   clusterEdgDistance: 200,
-      //   clusterNodeSize: 100,
-      //   clusterFociStrength: 15,
-      //   nodeSpacing: 20,
-      //   preventOverlap: true
-      // },
-      // layout: {
-      //   type: 'comboForce',
-      //   maxIteration: 1000,
-      //   gravity: 5,
-      //   comboGravity: 1,
-      //   preventOverlap: true,
-      //   center: [100, 100],     // 可选，默认为图的中心
-      //   linkDistance: 200,         // 可选，边长
-      //   nodeStrength: 300,         // 可选
-      //   edgeStrength: 0.05,        // 可选
-      // },
       modes: {
         default: [
           'drag-canvas',
@@ -372,21 +321,6 @@ export default {
       defaultEdge: {
         // 使用自定义边
         type: 'flow-line'
-      },
-      // defaultEdge: {
-      //   style: {
-      //     stroke: '#eee',
-      //     lineWidth: 1,
-      //     endArrow: {
-      //       path: G6.Arrow.vee(10, 20, 25),
-      //       d: 25
-      //     }
-      //     // ... 其他样式属性
-      //   },
-      // },
-      defaultCombo: {
-        // 使用自定义边
-        padding: 10
       },
     })
 

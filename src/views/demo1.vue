@@ -1,6 +1,12 @@
 <template>
-  <div class="home">
-    <div id="container"></div>
+  <div class="demo1Page relative">
+    <div class="" style="position: absolute; top: 0;left: 0;">
+      <el-input style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" clearable
+        placeholder="搜索"></el-input>
+      <el-button type="primary" size="mini" @click="searchFunc">搜索</el-button>
+    </div>
+    <div></div>
+    <div id="mountNode1"></div>
   </div>
 </template>
 
@@ -8,6 +14,31 @@
 // @ is an alias to /src
 import HelloWorld from '@/components/HelloWorld.vue'
 import G6 from '@antv/g6';
+// import data from './data'
+import ghData from './dataGraph1'
+
+const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
+  return [
+    ['M', x - r, y - r],
+    ['a', r, r, 0, 1, 0, r * 2, 0],
+    ['a', r, r, 0, 1, 0, -r * 2, 0],
+    ['M', x + 2 - r, y - r],
+    ['L', x + r - 2, y - r],
+  ];
+};
+const EXPAND_ICON = function EXPAND_ICON(x, y, r) {
+  return [
+    ['M', x - r, y - r],
+    ['a', r, r, 0, 1, 0, r * 2, 0],
+    ['a', r, r, 0, 1, 0, -r * 2, 0],
+    ['M', x + 2 - r, y - r],
+    ['L', x + r - 2, y - r],
+    ['M', x, y - 2 * r + 2],
+    ['L', x, y - 2],
+  ];
+};
+
+const rootId = 'rootId';
 
 export default {
   name: 'HomeView',
@@ -16,695 +47,479 @@ export default {
   },
   data() {
     return {
-      a: 1,
+      searchVal: '',
+      lastSearch: [],
+      graph: null,
     }
   },
   methods: {
+    searchFunc() {
+      // 清空上一次搜索
+      ghData.nodes.forEach(el => {
+        let id = el.id;
+        const item = this.graph.findById(id);
+        let model = {
+          ...el,
+          hightlight: false,
+        }
+        this.graph.updateItem(item, model)
+      })
+      if (this.searchVal.length > 0) {
+        const arr = ghData.nodes.filter(el => {
+          return el.name.includes(this.searchVal)
+        })
+
+        // 高亮
+        arr.forEach(el => {
+          let id = el.id;
+          const item = this.graph.findById(id);
+          let model = {
+            ...el,
+            hightlight: true,
+          }
+          this.graph.updateItem(item, model)
+        })
+      }
+      this.graph.render();
+    },
+    fittingString(str, maxWidth, fontSize, cfg) {
+      if (!str) {
+        return '123'
+      }
+      let currentWidth = 0
+      let res = str
+      str = str.length > 10 ? str.substr(0, 10) + '...' : str
+      const pattern = new RegExp('[\u4E00-\u9FA5]+')
+      str.split('').forEach((letter, i) => {
+        if (currentWidth > maxWidth) return
+        if (pattern.test(letter)) {
+          // 中文
+          currentWidth += fontSize
+        } else {
+          currentWidth += G6.Util.getLetterWidth(letter, fontSize)
+        }
+        if (currentWidth > maxWidth) {
+          res = `${str.substr(0, i)}\n${str.substr(i)}`
+        }
+      })
+      return res
+    },
+    customNode() {
+      const _this = this
+      G6.registerNode('icon-node', {
+        draw(cfg, group) {
+          const isRoot = cfg.id === rootId //'根节点'
+          // 取宽高的一半 后边的文本方便居中
+          const x = -144 / 2
+          const y = -54 / 2
+          // 画外边的盒子
+          let curShape = null;
+          if (cfg.staff) {
+            curShape = group.addShape('circle', {
+              attrs: {
+                x: 0,
+                y: 0,
+                r: 30,
+                fill: '#f7e2dd',
+              },
+              name: 'container-node',
+            })
+          } else {
+            curShape = group.addShape('rect', {
+              attrs: {
+                x,
+                y,
+                width: 144,
+                height: 54,
+                fill: isRoot ? '#4ea2f0' : '#fff',
+                stroke: cfg.hightlight ? 'red' : '#4ea2f0',
+                radius: 2,
+                cursor: 'pointer'
+              },
+              name: 'container-node',
+            })
+          }
+
+          // 
+          // if (cfg.show === false) {
+          //   curShape = null
+          // }
+
+          // 处理文本换行
+          const label = _this.fittingString(cfg.name, 124, 12, 2, cfg)
+          // 画文本
+          group.addShape('text', {
+            attrs: {
+              text: label,
+              x: 0,
+              y: 0,
+              textAlign: 'center',
+              textBaseline: 'middle',
+              fill: isRoot ? '#fff' : '#303242',
+              cursor: 'pointer'
+            },
+            name: 'text-node'
+          })
+          // 画展开图标
+          if (cfg.collapsed !== undefined) {
+            group.addShape('marker', {
+              attrs: {
+                x: 0,
+                y: -y + 10,
+                r: 6,
+                fill: '#fff',
+                stroke: '#4ea2f0',
+                cursor: 'pointer',
+                symbol: cfg.collapsed ? EXPAND_ICON : COLLAPSE_ICON // 图标的路径函数
+              },
+              name: 'collapse-node',
+              modelId: cfg.id,
+            })
+          }
+          return curShape
+        },
+        update(cfg, node) {
+          // const group = node.getContainer()
+          // // 找到marker那个节点name 替换图标的路径函数
+          // const icon = group.find((e) => e.get('name') === 'collapse-node')
+          // icon.attr('symbol', COLLAPSE_ICON)
+          // const collapseRect = group.find(ele => ele.get('name') === 'collapse-back');
+          // const collapseText = group.find(ele => ele.get('name') === 'collapse-text');
+          // collapseRect?.toFront();
+          // collapseText?.toFront();
+        },
+        setState(name, value, item) {
+          if (name === 'collapse') {
+            const group = item.getContainer();
+            const collapseNode = group.find(ele => ele.get('name') === 'collapse-node');
+            collapseNode.attr({
+              symbol: value ? EXPAND_ICON : COLLAPSE_ICON,
+            });
+          }
+        },
+      })
+    },
+    customEdge() {
+      G6.registerEdge('flow-line', {
+        draw(cfg, group) {
+          // 分别是边两端与起始节点和结束节点的交点
+          const startPoint = cfg.startPoint;
+          const endPoint = cfg.endPoint;
+          const { stockProportion } = cfg.targetNode.getModel()
+          // 根据两个点画出想要的边
+          const pathShape = group.addShape('path', {
+            attrs: {
+              stroke: '#eee',
+              // svg path
+              // https://developer.mozilla.org/zh-CN/docs/Web/SVG/Tutorial/Paths
+              // path: [
+              //   ['M', startPoint.x, startPoint.y],
+              //   ['L', endPoint.x / 3 + (2 / 3) * startPoint.x, startPoint.y], // 三分之一处
+              //   ['L', endPoint.x / 3 + (2 / 3) * startPoint.x, endPoint.y], // 三分之二处
+              //   ['L', endPoint.x, endPoint.y],
+              // ],
+              path: [
+                ['M', startPoint.x, startPoint.y],
+                // ['L', startPoint.x, (startPoint.y + endPoint.y) / 2],
+                // ['L', endPoint.x, (startPoint.y + endPoint.y) / 2],
+                ['L', endPoint.x, endPoint.y]
+              ],
+              // 箭头
+              endArrow: {
+                fill: '#4ea2f0',
+                stroke: '#4ea2f0',
+                path: G6.Arrow.triangle(10, 15, 0)
+              }
+            },
+            name: 'flow-edge'
+          })
+          // 画边的文字
+          if (stockProportion) {
+            const label = stockProportion + '%'
+            group.addShape('text', {
+              attrs: {
+                text: label,
+                x: endPoint.x + 4,
+                y: (startPoint.y + endPoint.y) / 2,
+                fill: '#4ea2f0',
+                stroke: '#fff',
+              },
+              name: 'text-node'
+            })
+          }
+          return pathShape
+        },
+        // 状态名称 状态值 edge
+        setState(name, value, item) {
+          const shape = item.getKeyShape()
+          // 设置线的虚线样式
+          // https://developer.mozilla.org/zh-CN/docs/Web/API/CanvasRenderingContext2D/setLineDash
+          const lineDash = [10, 5]
+          if (name === 'hover') {
+            if (value) {
+              let index = 0
+              shape.attr('stroke', '#4ea2f0')
+              shape.animate(
+                () => {
+                  index++
+                  return {
+                    lineDash,
+                    lineDashOffset: -index
+                  }
+                },
+                {
+                  repeat: true, // 动画重复
+                  duration: 10000, // 一次动画的时长为 10000
+                }
+              )
+            } else {
+              shape.attr('stroke', '#eee')
+              // 结束动画
+              shape.stopAnimate()
+              // 清空 lineDash
+              shape.attr('lineDash', null)
+            }
+          } else if (name === 'visible') {
+          }
+        }
+      })
+    }
   },
   mounted() {
-    // mocked data
-    const mockData = {
-      id: 'g1',
-      name: 'Name1',
-      count: 123456,
-      label: '538.90',
-      currency: 'Yuan',
-      rate: 1.0,
-      status: 'B',
-      variableName: 'V1',
-      variableValue: 0.341,
-      variableUp: false,
-      children: [
-        {
-          id: 'g12',
-          name: 'Deal with LONG label LONG label LONG label LONG label',
-          count: 123456,
-          label: '338.00',
-          rate: 0.627,
-          status: 'R',
-          currency: 'Yuan',
-          variableName: 'V2',
-          variableValue: 0.179,
-          variableUp: true,
-          children: [
-            {
-              id: 'g121',
-              name: 'Name3',
-              collapsed: true,
-              count: 123456,
-              label: '138.00',
-              rate: 0.123,
-              status: 'B',
-              currency: 'Yuan',
-              variableName: 'V2',
-              variableValue: 0.27,
-              variableUp: true,
-              children: [
-                {
-                  id: 'g1211',
-                  name: 'Name4',
-                  count: 123456,
-                  label: '138.00',
-                  rate: 1.0,
-                  status: 'B',
-                  currency: 'Yuan',
-                  variableName: 'V1',
-                  variableValue: 0.164,
-                  variableUp: false,
-                  children: [],
-                },
-              ],
-            },
-            {
-              id: 'g122',
-              name: 'Name5',
-              collapsed: true,
-              count: 123456,
-              label: '100.00',
-              rate: 0.296,
-              status: 'G',
-              currency: 'Yuan',
-              variableName: 'V1',
-              variableValue: 0.259,
-              variableUp: true,
-              children: [
-                {
-                  id: 'g1221',
-                  name: 'Name6',
-                  count: 123456,
-                  label: '40.00',
-                  rate: 0.4,
-                  status: 'G',
-                  currency: 'Yuan',
-                  variableName: 'V1',
-                  variableValue: 0.135,
-                  variableUp: true,
-                  children: [
-                    {
-                      id: 'g12211',
-                      name: 'Name6-1',
-                      count: 123456,
-                      label: '40.00',
-                      rate: 1.0,
-                      status: 'R',
-                      currency: 'Yuan',
-                      variableName: 'V1',
-                      variableValue: 0.181,
-                      variableUp: true,
-                      children: [],
-                    },
-                  ],
-                },
-                {
-                  id: 'g1222',
-                  name: 'Name7',
-                  count: 123456,
-                  label: '60.00',
-                  rate: 0.6,
-                  status: 'G',
-                  currency: 'Yuan',
-                  variableName: 'V1',
-                  variableValue: 0.239,
-                  variableUp: false,
-                  children: [],
-                },
-              ],
-            },
-            {
-              id: 'g123',
-              name: 'Name8',
-              collapsed: true,
-              count: 123456,
-              label: '100.00',
-              rate: 0.296,
-              status: 'DI',
-              currency: 'Yuan',
-              variableName: 'V2',
-              variableValue: 0.131,
-              variableUp: false,
-              children: [
-                {
-                  id: 'g1231',
-                  name: 'Name8-1',
-                  count: 123456,
-                  label: '100.00',
-                  rate: 1.0,
-                  status: 'DI',
-                  currency: 'Yuan',
-                  variableName: 'V2',
-                  variableValue: 0.131,
-                  variableUp: false,
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: 'g13',
-          name: 'Name9',
-          count: 123456,
-          label: '100.90',
-          rate: 0.187,
-          status: 'B',
-          currency: 'Yuan',
-          variableName: 'V2',
-          variableValue: 0.221,
-          variableUp: true,
-          children: [
-            {
-              id: 'g131',
-              name: 'Name10',
-              count: 123456,
-              label: '33.90',
-              rate: 0.336,
-              status: 'R',
-              currency: 'Yuan',
-              variableName: 'V1',
-              variableValue: 0.12,
-              variableUp: true,
-              children: [],
-            },
-            {
-              id: 'g132',
-              name: 'Name11',
-              count: 123456,
-              label: '67.00',
-              rate: 0.664,
-              status: 'G',
-              currency: 'Yuan',
-              variableName: 'V1',
-              variableValue: 0.241,
-              variableUp: false,
-              children: [],
-            },
-          ],
-        },
-        {
-          id: 'g14',
-          name: 'Name12',
-          count: 123456,
-          label: '100.00',
-          rate: 0.186,
-          status: 'G',
-          currency: 'Yuan',
-          variableName: 'V2',
-          variableValue: 0.531,
-          variableUp: true,
-          children: [],
-        },
-      ],
-    };
-
-    const colors = {
-      B: '#5B8FF9',
-      R: '#F46649',
-      Y: '#EEBC20',
-      G: '#5BD8A6',
-      DI: '#A7A7A7',
-    };
-
-    //  组件props
-    const props = {
-      data: mockData,
-      config: {
-        padding: [20, 50],
-        defaultLevel: 3,
-        defaultZoom: 0.8,
-        modes: { default: ['zoom-canvas', 'drag-canvas'] },
-      },
-    };
-
-    const container = document.getElementById('container');
-    const width = container.scrollWidth;
-    const height = container.scrollHeight || 500;
-
-    // 默认配置
-    const defaultConfig = {
-      width,
-      height,
-      modes: {
-        default: ['zoom-canvas', 'drag-canvas'],
-      },
+    // 生成实例
+    // const graph = new G6.TreeGraph({
+    this.graph = new G6.Graph({
+      container: 'mountNode1',
+      width: 800,
+      height: 800,
       fitView: true,
-      animate: true,
+
+      groupByTypes: false, // 若希望在带有 combo 的图上，节点、边、combo 的层级符合常规逻辑，需要将 groupByTypes 设置为 false
+      layout: {
+        type: 'comboCombined',
+        // nodeSize: 10,
+        // spacing: (d) => {
+        //   // d is a node
+        //   // if (d.id === 'rootId') {
+        //   //   return 100;
+        //   // }
+        //   return 10;
+        // },
+        outerLayout: new G6.Layout['forceAtlas2']({
+          kr: 10
+        }),
+        innerLayout: new G6.Layout['dagre']({
+          rankdir: 'TB', // 可选，默认为图的中心
+          // align: 'DL', // 可选
+          nodesep: 50, // 可选
+          ranksep: 40, // 可选
+        }),
+        // center: [200, 200],     // 可选，默认为图的中心
+        onLayoutEnd: () => {      // 可选
+          console.log('combo force layout done');
+        }
+      },
+
+      // layout: {
+      //   type: 'dagre',
+      //   rankdir: 'TB', // 可选，默认为图的中心
+      //   // align: 'DL', // 可选
+      //   nodesep: 50, // 可选
+      //   ranksep: 40, // 可选
+      //   // controlPoints: true, // 可选
+      // },
+      // layout: {
+      //   type: "force2",
+      //   clustering: true,
+      //   clusterNodeStrength: -5,
+      //   clusterEdgDistance: 200,
+      //   clusterNodeSize: 100,
+      //   clusterFociStrength: 15,
+      //   nodeSpacing: 20,
+      //   preventOverlap: true
+      // },
+      // layout: {
+      //   type: 'comboForce',
+      //   maxIteration: 1000,
+      //   gravity: 5,
+      //   comboGravity: 1,
+      //   preventOverlap: true,
+      //   center: [100, 100],     // 可选，默认为图的中心
+      //   linkDistance: 200,         // 可选，边长
+      //   nodeStrength: 300,         // 可选
+      //   edgeStrength: 0.05,        // 可选
+      // },
+      modes: {
+        default: [
+          'drag-canvas',
+          {
+            type: 'zoom-canvas',
+            sensitivity: 1, // 缩放灵敏度
+            minZoom: 0.5,
+            maxZoom: 1.5
+          },
+        ]
+      },
       defaultNode: {
-        type: 'flow-rect',
+        // 使用自定义节点
+        type: 'icon-node',
+        // 节点的连接点
+        // https://g6.antv.antgroup.com/manual/middle/elements/nodes/anchorpoint
+        anchorPoints: [
+          [0.5, 0],
+          [0.5, 1]
+        ],
       },
       defaultEdge: {
-        type: 'cubic-horizontal',
-        style: {
-          stroke: '#CED4D9',
-        },
+        // 使用自定义边
+        type: 'flow-line'
       },
-      layout: {
-        type: 'indented',
-        direction: 'LR',
-        dropCap: false,
-        indent: 300,
-        getHeight: () => {
-          return 60;
-        },
+      // defaultEdge: {
+      //   style: {
+      //     stroke: '#eee',
+      //     lineWidth: 1,
+      //     endArrow: {
+      //       path: G6.Arrow.vee(10, 20, 25),
+      //       d: 25
+      //     }
+      //     // ... 其他样式属性
+      //   },
+      // },
+      defaultCombo: {
+        // 使用自定义边
+        padding: 10
       },
-    };
+    })
 
-    // 自定义节点、边
-    const registerFn = () => {
-      /**
-       * 自定义节点
-       */
-      G6.registerNode(
-        'flow-rect',
-        {
-          shapeType: 'flow-rect',
-          draw(cfg, group) {
-            const {
-              name = '',
-              variableName,
-              variableValue,
-              variableUp,
-              label,
-              collapsed,
-              currency,
-              status,
-              rate
-            } = cfg;
 
-            const grey = '#CED4D9';
-            const rectConfig = {
-              width: 202,
-              height: 60,
-              lineWidth: 1,
-              fontSize: 12,
-              fill: '#fff',
-              radius: 4,
-              stroke: grey,
-              opacity: 1,
-            };
+    // this.graph.node(function (node) {
+    //   return {
+    //     label: node.id,
+    //     labelCfg: {
+    //       offset: 10,
+    //       position: node.children && node.children.length > 0 ? 'left' : 'right',
+    //     },
+    //   };
+    // });
 
-            const nodeOrigin = {
-              x: -rectConfig.width / 2,
-              y: -rectConfig.height / 2,
-            };
 
-            const textConfig = {
-              textAlign: 'left',
-              textBaseline: 'bottom',
-            };
+    const handleCollapse = (e) => {
+      const target = e.target;
+      const id = target.get('modelId');
+      const item = this.graph.findById(id);
+      const nodeModel = item.getModel();
+      nodeModel.collapsed = !nodeModel.collapsed;
 
-            const rect = group.addShape('rect', {
-              attrs: {
-                x: nodeOrigin.x,
-                y: nodeOrigin.y,
-                ...rectConfig,
-              },
-            });
+      // console.log(111, item)
 
-            const rectBBox = rect.getBBox();
 
-            // label title
-            group.addShape('text', {
-              attrs: {
-                ...textConfig,
-                x: 12 + nodeOrigin.x,
-                y: 20 + nodeOrigin.y,
-                text: name.length > 28 ? name.substr(0, 28) + '...' : name,
-                fontSize: 12,
-                opacity: 0.85,
-                fill: '#000',
-                cursor: 'pointer',
-              },
-              // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-              name: 'name-shape',
-            });
+      this.graph.setItemState(item, 'collapse', nodeModel.collapsed);
 
-            // price
-            const price = group.addShape('text', {
-              attrs: {
-                ...textConfig,
-                x: 12 + nodeOrigin.x,
-                y: rectBBox.maxY - 12,
-                text: label,
-                fontSize: 16,
-                fill: '#000',
-                opacity: 0.85,
-              },
-            });
-
-            // label currency
-            group.addShape('text', {
-              attrs: {
-                ...textConfig,
-                x: price.getBBox().maxX + 5,
-                y: rectBBox.maxY - 12,
-                text: currency,
-                fontSize: 12,
-                fill: '#000',
-                opacity: 0.75,
-              },
-            });
-
-            // percentage
-            const percentText = group.addShape('text', {
-              attrs: {
-                ...textConfig,
-                x: rectBBox.maxX - 8,
-                y: rectBBox.maxY - 12,
-                text: `${((variableValue || 0) * 100).toFixed(2)}%`,
-                fontSize: 12,
-                textAlign: 'right',
-                fill: colors[status],
-              },
-            });
-
-            // percentage triangle
-            const symbol = variableUp ? 'triangle' : 'triangle-down';
-            const triangle = group.addShape('marker', {
-              attrs: {
-                ...textConfig,
-                x: percentText.getBBox().minX - 10,
-                y: rectBBox.maxY - 12 - 6,
-                symbol,
-                r: 6,
-                fill: colors[status],
-              },
-            });
-
-            // variable name
-            group.addShape('text', {
-              attrs: {
-                ...textConfig,
-                x: triangle.getBBox().minX - 4,
-                y: rectBBox.maxY - 12,
-                text: variableName,
-                fontSize: 12,
-                textAlign: 'right',
-                fill: '#000',
-                opacity: 0.45,
-              },
-            });
-
-            // bottom line background
-            const bottomBackRect = group.addShape('rect', {
-              attrs: {
-                x: nodeOrigin.x,
-                y: rectBBox.maxY - 4,
-                width: rectConfig.width,
-                height: 4,
-                radius: [0, 0, rectConfig.radius, rectConfig.radius],
-                fill: '#E0DFE3',
-              },
-            });
-
-            // bottom percent
-            const bottomRect = group.addShape('rect', {
-              attrs: {
-                x: nodeOrigin.x,
-                y: rectBBox.maxY - 4,
-                width: rate * rectBBox.width,
-                height: 4,
-                radius: [0, 0, 0, rectConfig.radius],
-                fill: colors[status],
-              },
-            });
-
-            // collapse rect
-            if (cfg.children && cfg.children.length) {
-              group.addShape('rect', {
-                attrs: {
-                  x: rectConfig.width / 2 - 8,
-                  y: -8,
-                  width: 16,
-                  height: 16,
-                  stroke: 'rgba(0, 0, 0, 0.25)',
-                  cursor: 'pointer',
-                  fill: '#fff',
-                },
-                // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-                name: 'collapse-back',
-                modelId: cfg.id,
-              });
-
-              // collpase text
-              group.addShape('text', {
-                attrs: {
-                  x: rectConfig.width / 2,
-                  y: 1,
-                  textAlign: 'center',
-                  textBaseline: 'middle',
-                  text: collapsed ? '+' : '-',
-                  fontSize: 16,
-                  cursor: 'pointer',
-                  fill: 'rgba(0, 0, 0, 0.25)',
-                },
-                // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-                name: 'collapse-text',
-                modelId: cfg.id,
-              });
-            }
-
-            this.drawLinkPoints(cfg, group);
-            return rect;
-          },
-          update(cfg, item) {
-            const { level, status, name } = cfg;
-            const group = item.getContainer();
-            let mask = group.find(ele => ele.get('name') === 'mask-shape');
-            let maskLabel = group.find(ele => ele.get('name') === 'mask-label-shape');
-            if (level === 0) {
-              group.get('children').forEach(child => {
-                if (child.get('name')?.includes('collapse')) return;
-                child.hide();
-              })
-              if (!mask) {
-                mask = group.addShape('rect', {
-                  attrs: {
-                    x: -101,
-                    y: -30,
-                    width: 202,
-                    height: 60,
-                    opacity: 0,
-                    fill: colors[status]
-                  },
-                  // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-                  name: 'mask-shape',
-                });
-                maskLabel = group.addShape('text', {
-                  attrs: {
-                    fill: '#fff',
-                    fontSize: 20,
-                    x: 0,
-                    y: 10,
-                    text: name.length > 28 ? name.substr(0, 16) + '...' : name,
-                    textAlign: 'center',
-                    opacity: 0,
-                  },
-                  // must be assigned in G6 3.3 and later versions. it can be any string you want, but should be unique in a custom item type
-                  name: 'mask-label-shape',
-                });
-                const collapseRect = group.find(ele => ele.get('name') === 'collapse-back');
-                const collapseText = group.find(ele => ele.get('name') === 'collapse-text');
-                collapseRect?.toFront();
-                collapseText?.toFront();
-              } else {
-                mask.show();
-                maskLabel.show();
-              }
-              mask.animate({ opacity: 1 }, 200);
-              maskLabel.animate({ opacity: 1 }, 200);
-              return mask;
-            } else {
-              group.get('children').forEach(child => {
-                if (child.get('name')?.includes('collapse')) return;
-                child.show();
-              })
-              mask?.animate({ opacity: 0 }, {
-                duration: 200,
-                callback: () => mask.hide()
-              });
-              maskLabel?.animate({ opacity: 0 }, {
-                duration: 200,
-                callback: () => maskLabel.hide()
-              });
-            }
-            this.updateLinkPoints(cfg, group);
-          },
-          setState(name, value, item) {
-            if (name === 'collapse') {
-              const group = item.getContainer();
-              const collapseText = group.find((e) => e.get('name') === 'collapse-text');
-              if (collapseText) {
-                if (!value) {
-                  collapseText.attr({
-                    text: '-',
-                  });
-                } else {
-                  collapseText.attr({
-                    text: '+',
-                  });
-                }
-              }
-            }
-          },
-          getAnchorPoints() {
-            return [
-              [0, 0.5],
-              [1, 0.5],
-            ];
-          },
-        },
-        'rect',
-      );
-
-      G6.registerEdge(
-        'flow-cubic',
-        {
-          getControlPoints(cfg) {
-            let controlPoints = cfg.controlPoints; // 指定controlPoints
-            if (!controlPoints || !controlPoints.length) {
-              const { startPoint, endPoint, sourceNode, targetNode } = cfg;
-              const { x: startX, y: startY, coefficientX, coefficientY } = sourceNode
-                ? sourceNode.getModel()
-                : startPoint;
-              const { x: endX, y: endY } = targetNode ? targetNode.getModel() : endPoint;
-              let curveStart = (endX - startX) * coefficientX;
-              let curveEnd = (endY - startY) * coefficientY;
-              curveStart = curveStart > 40 ? 40 : curveStart;
-              curveEnd = curveEnd < -30 ? curveEnd : -30;
-              controlPoints = [
-                { x: startPoint.x + curveStart, y: startPoint.y },
-                { x: endPoint.x + curveEnd, y: endPoint.y },
-              ];
-            }
-            return controlPoints;
-          },
-          getPath(points) {
-            const path = [];
-            path.push(['M', points[0].x, points[0].y]);
-            path.push([
-              'C',
-              points[1].x,
-              points[1].y,
-              points[2].x,
-              points[2].y,
-              points[3].x,
-              points[3].y,
-            ]);
-            return path;
-          },
-        },
-        'single-line',
-      );
-    };
-
-    registerFn();
-
-    const { data } = props;
-    let graph = null;
-
-    const initGraph = (data) => {
-      if (!data) {
-        return;
-      }
-      const { onInit, config } = props;
-      const tooltip = new G6.Tooltip({
-        // offsetX and offsetY include the padding of the parent container
-        offsetX: 20,
-        offsetY: 30,
-        // the types of items that allow the tooltip show up
-        // 允许出现 tooltip 的 item 类型
-        itemTypes: ['node'],
-        // custom the tooltip's content
-        // 自定义 tooltip 内容
-        getContent: (e) => {
-          const outDiv = document.createElement('div');
-          //outDiv.style.padding = '0px 0px 20px 0px';
-          const nodeName = e.item.getModel().name;
-          let formatedNodeName = '';
-          for (let i = 0; i < nodeName.length; i++) {
-            formatedNodeName = `${formatedNodeName}${nodeName[i]}`;
-            if (i !== 0 && i % 20 === 0) formatedNodeName = `${formatedNodeName}<br/>`;
-          }
-          outDiv.innerHTML = `${formatedNodeName}`;
-          return outDiv;
-        },
-        shouldBegin: (e) => {
-          if (e.target.get('name') === 'name-shape' || e.target.get('name') === 'mask-label-shape') return true;
-          return false;
-        },
-      });
-      graph = new G6.TreeGraph({
-        container: 'container',
-        ...defaultConfig,
-        ...config,
-        plugins: [tooltip],
-      });
-      if (typeof onInit === 'function') {
-        onInit(graph);
-      }
-      graph.data(data);
-      graph.render();
-
-      const handleCollapse = (e) => {
-        const target = e.target;
-        const id = target.get('modelId');
-        const item = graph.findById(id);
-        const nodeModel = item.getModel();
-        nodeModel.collapsed = !nodeModel.collapsed;
-        graph.layout();
-        graph.setItemState(item, 'collapse', nodeModel.collapsed);
-      };
-      graph.on('collapse-text:click', (e) => {
-        handleCollapse(e);
-      });
-      graph.on('collapse-back:click', (e) => {
-        handleCollapse(e);
-      });
-
-      // 监听画布缩放，缩小到一定程度，节点显示缩略样式
-      let currentLevel = 1;
-      const briefZoomThreshold = Math.max(graph.getZoom(), 0.5);
-      graph.on('viewportchange', e => {
-        if (e.action !== 'zoom') return;
-        const currentZoom = graph.getZoom();
-        let toLevel = currentLevel;
-        if (currentZoom < briefZoomThreshold) {
-          toLevel = 0;
-        } else {
-          toLevel = 1;
-        }
-        if (toLevel !== currentLevel) {
-          currentLevel = toLevel;
-          graph.getNodes().forEach(node => {
-            graph.updateItem(node, {
-              level: toLevel
-            })
+      // 寻找所有子节点 隐藏或显示
+      let curNodes = [];
+      const edges = ghData.edges;
+      const findAllNodeFunc = (source) => {
+        const curEdges = edges.filter(el => {
+          return source === el.source;
+        })
+        if (curEdges.length > 0) {
+          curEdges.forEach(el => {
+            curNodes.push(el.target);
+            findAllNodeFunc(el.target)
           })
         }
-      });
+
+      }
+      findAllNodeFunc(id)
+      console.log("curNodes", curNodes)
+      // 隐藏或显示
+      curNodes.forEach(el => {
+        const curItem = this.graph.findById(el);
+        if (nodeModel.collapsed) {
+          this.graph.hideItem(curItem)
+        } else {
+          this.graph.showItem(curItem)
+        }
+      })
+      // 
+      // this.graph.layout();
     };
+    this.graph.on('collapse-node:click', (e) => {
+      console.log('collapse-node:click')
+      handleCollapse(e);
+    });
+    // this.graph.on('collapse-back:click', (e) => {
+    //   console.log('collapse-back:click')
+    //   handleCollapse(e);
+    // });
 
-    initGraph(data);
+    // 鼠标悬浮节点
+    this.graph.on('node:mouseenter', ({ item }) => {
+      // 根节点
+      const isRoot = item._cfg.id === rootId
+      if (!isRoot) {
+        // 节点相关联的边执行动画
+        item.getEdges().forEach(edge => {
+          this.graph.setItemState(edge, 'hover', true)
+          edge.toFront()
+        })
+      }
+    })
+    // 鼠标离开节点
+    this.graph.on('node:mouseleave', ({ item }) => {
+      // 根节点
+      console.log('node:mouseleave')
+      const isRoot = item._cfg.id === rootId
+      if (!isRoot) {
+        item.getEdges().forEach(edge => {
+          this.graph.setItemState(edge, 'hover', false)
+        })
+      }
+    })
 
-    if (typeof window !== 'undefined')
-      window.onresize = () => {
-        if (!graph || graph.get('destroyed')) return;
-        if (!container || !container.scrollWidth || !container.scrollHeight) return;
-        graph.changeSize(container.scrollWidth, container.scrollHeight);
-      };
+
+    ghData?.children?.forEach(item => {
+      // 根据条件把图渲染在上边或者下边
+      item.location = 'right'
+    })
 
 
+    console.log(111111, ghData)
+    // 绘制自定义节点
+    this.customNode()
+    // // 绘制自定义边
+    this.customEdge()
+
+    // this.graph.on('node:click', (e) => {
+    //   const { target: { cfg: { type } }, item } = e
+    //   const isMarker = type === 'marker'
+    //   // 点击图标展开下一级
+    //   if (isMarker) {
+    //     console.log(11)
+    //     // 如果children有值说明之前获取过了直接展开就可
+    //     // if (children?.length > 0) return
+    //     // 获取下一级的数据然后使用this.graph.updateChildren()去更新图
+    //     // this.getChildrenData(item)
+    //   } else {
+    //     // 点击形状可以执行跳转详情之类的逻辑
+    //   }
+    // })
+
+    // 解决渲染残影问题
+    this.graph.get('canvas').set('localRefresh', false)
+    this.graph.read(ghData)
+    this.graph.fitCenter()
 
   },
+  beforeDestroy() {
+    if (this.graph) {
+      this.graph.clear();
+      this.graph.destroy()
+      console.log("销毁画布。1")
+    }
+  }
 }
 </script>
-<style lang="scss">
-.g6-component-tooltip {
-  background-color: rgba(0, 0, 0, 0.65);
-  padding: 10px;
-  box-shadow: rgb(174, 174, 174) 0px 0px 10px;
-  width: fit-content;
-  color: #fff;
-  border-radius: 4px;
-}
+<style lang="scss" scoped>
+.home {}
 </style>
