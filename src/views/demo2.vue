@@ -37,6 +37,8 @@ const EXPAND_ICON = function EXPAND_ICON(x, y, r) {
 };
 
 const rootId = 'rootId';
+const rectShapeWidth = 144;
+const rectShapeHeight = 54;
 
 export default {
   name: 'HomeView',
@@ -45,7 +47,6 @@ export default {
     return {
       searchVal: '',
       lastSearch: [],
-      graph: null,
     }
   },
   methods: {
@@ -100,14 +101,35 @@ export default {
       })
       return res
     },
+    // 寻找某个节点下的所有子节点
+    findAllChildNodes(id) {
+      let curNodes = [];
+      const edges = ghData.edges;
+      const findAllNodeFunc = (source) => {
+        const curEdges = edges.filter(el => {
+          return source === el.source;
+        })
+        if (curEdges.length > 0) {
+          curEdges.forEach(el => {
+            curNodes.push(el.target);
+            findAllNodeFunc(el.target)
+          })
+        }
+
+      }
+      findAllNodeFunc(id);
+      // 去重
+      curNodes = [...new Set(curNodes)];
+      return curNodes
+    },
     customNode() {
       const _this = this
       G6.registerNode('icon-node', {
         draw(cfg, group) {
           const isRoot = cfg.id === rootId //'根节点'
           // 取宽高的一半 后边的文本方便居中
-          const x = -144 / 2
-          const y = -54 / 2
+          const x = -rectShapeWidth / 2
+          const y = -rectShapeHeight / 2
           // 画外边的盒子
           let curShape = null;
           if (cfg.staff) {
@@ -125,8 +147,8 @@ export default {
               attrs: {
                 x,
                 y,
-                width: 144,
-                height: 54,
+                width: rectShapeWidth,
+                height: rectShapeHeight,
                 fill: isRoot ? '#4ea2f0' : '#fff',
                 stroke: cfg.hightlight ? 'red' : '#4ea2f0',
                 radius: 2,
@@ -135,11 +157,6 @@ export default {
               name: 'container-node',
             })
           }
-
-          // 
-          // if (cfg.show === false) {
-          //   curShape = null
-          // }
 
           // 处理文本换行
           const label = _this.fittingString(cfg.name, 124, 12, 2, cfg)
@@ -156,8 +173,41 @@ export default {
             },
             name: 'text-node'
           })
+
           // 画展开图标
-          if (cfg.collapsed !== undefined) {
+          // 查找当前节点下的子节点
+          if (_this.checkCompanyNodeAndStaffNodeExist(cfg.id)) {
+            // 偏移量
+            const offset = 30
+            // 公司
+            group.addShape('marker', {
+              attrs: {
+                x: -rectShapeWidth / 2 + offset,
+                y: -y + 10,
+                r: 6,
+                fill: '#fff',
+                stroke: '#4ea2f0',
+                cursor: 'pointer',
+                symbol: cfg.collapsed1 ? EXPAND_ICON : COLLAPSE_ICON // 图标的路径函数
+              },
+              name: 'collapse-node1',
+              modelId: cfg.id,
+            })
+            // 员工
+            group.addShape('marker', {
+              attrs: {
+                x: rectShapeWidth / 2 - offset,
+                y: -y + 10,
+                r: 6,
+                fill: '#fff',
+                stroke: '#4ea2f0',
+                cursor: 'pointer',
+                symbol: cfg.collapsed2 ? EXPAND_ICON : COLLAPSE_ICON // 图标的路径函数
+              },
+              name: 'collapse-node2',
+              modelId: cfg.id,
+            })
+          } else if (_this.checkChildNodesExist(cfg.id)) {
             group.addShape('marker', {
               attrs: {
                 x: 0,
@@ -166,12 +216,15 @@ export default {
                 fill: '#fff',
                 stroke: '#4ea2f0',
                 cursor: 'pointer',
-                symbol: cfg.collapsed ? EXPAND_ICON : COLLAPSE_ICON // 图标的路径函数
+                symbol: cfg.collapsed3 ? EXPAND_ICON : COLLAPSE_ICON // 图标的路径函数
               },
-              name: 'collapse-node',
-              modelId: cfg.id,
+              name: 'collapse-node3',
+              modelId: `${cfg.id}`,
             })
           }
+
+
+          // }
           return curShape
         },
         update(cfg, node) {
@@ -185,9 +238,21 @@ export default {
           // collapseText?.toFront();
         },
         setState(name, value, item) {
-          if (name === 'collapse') {
+          if (name === 'collapsed3') {
             const group = item.getContainer();
-            const collapseNode = group.find(ele => ele.get('name') === 'collapse-node');
+            const collapseNode = group.find(ele => ele.get('name') === 'collapse-node3');
+            collapseNode.attr({
+              symbol: value ? EXPAND_ICON : COLLAPSE_ICON,
+            });
+          } else if (name === 'collapsed1') {
+            const group = item.getContainer();
+            const collapseNode = group.find(ele => ele.get('name') === 'collapse-node1');
+            collapseNode.attr({
+              symbol: value ? EXPAND_ICON : COLLAPSE_ICON,
+            });
+          } else if (name === 'collapsed2') {
+            const group = item.getContainer();
+            const collapseNode = group.find(ele => ele.get('name') === 'collapse-node2');
             collapseNode.attr({
               symbol: value ? EXPAND_ICON : COLLAPSE_ICON,
             });
@@ -195,13 +260,58 @@ export default {
         },
       })
     },
+    // 判断有子节点
+    checkChildNodesExist(nodeId) {
+      const sourceEdges = ghData.edges.filter(el => el.source === nodeId);
+      return sourceEdges.length > 0
+    },
+    // 判断是否同时存在公司节点和员工节点
+    checkCompanyNodeAndStaffNodeExist(nodeId) {
+      const sourceEdges = ghData.edges.filter(el => el.source === nodeId);
+      if (sourceEdges.length > 1) {
+        const checkCompanyNodeExist = sourceEdges.some(item => {
+          let curNode = ghData.nodes.find(el => item.target === el.id);
+          const staff = curNode?.staff;
+          return !staff;
+        });
+        const checkStaffNodeExist = sourceEdges.some(item => {
+          let curNode = ghData.nodes.find(el => item.target === el.id);
+          const staff = curNode?.staff;
+          return staff;
+        });
+        // 存在公司和员工的子节点
+        if (checkCompanyNodeExist && checkStaffNodeExist) {
+          return true;
+        }
+      }
+      return false;
+    },
     customEdge() {
+      const _this = this;
       G6.registerEdge('flow-line', {
         draw(cfg, group) {
+          const sourceNodeModel = cfg.sourceNode.getModel();
+
           // 分别是边两端与起始节点和结束节点的交点
           const startPoint = cfg.startPoint;
           const endPoint = cfg.endPoint;
-          const { stockProportion } = cfg.targetNode.getModel()
+          const targetNodeModel = cfg.targetNode.getModel()
+          const stockProportion = targetNodeModel.stockProportion
+          // 只有一个节点默认从中间开始连线
+          let startPointX = startPoint.x;
+          let endPointX = endPoint.x;
+
+          if (_this.checkCompanyNodeAndStaffNodeExist(sourceNodeModel.id)) {
+            // 偏移量
+            const offset = 30
+            // 员工节点
+            if (targetNodeModel.staff) {
+              startPointX += rectShapeWidth / 2 - offset
+            } else {
+              startPointX -= rectShapeWidth / 2 - offset
+            }
+          }
+
           // 根据两个点画出想要的边
           const pathShape = group.addShape('path', {
             attrs: {
@@ -214,11 +324,15 @@ export default {
               //   ['L', endPoint.x / 3 + (2 / 3) * startPoint.x, endPoint.y], // 三分之二处
               //   ['L', endPoint.x, endPoint.y],
               // ],
+              // path: [
+              //   ['M', startPoint.x, startPoint.y],
+              //   // ['L', startPoint.x, (startPoint.y + endPoint.y) / 2],
+              //   // ['L', endPoint.x, (startPoint.y + endPoint.y) / 2],
+              //   ['L', endPoint.x, endPoint.y]
+              // ],
               path: [
-                ['M', startPoint.x, startPoint.y],
-                // ['L', startPoint.x, (startPoint.y + endPoint.y) / 2],
-                // ['L', endPoint.x, (startPoint.y + endPoint.y) / 2],
-                ['L', endPoint.x, endPoint.y]
+                ['M', startPointX, startPoint.y],
+                ['L', endPointX, endPoint.y]
               ],
               // 箭头
               endArrow: {
@@ -336,55 +450,96 @@ export default {
     // });
 
 
-    const handleCollapse = (e) => {
+    const handleCollapse = (e, name) => {
       const target = e.target;
-      const id = target.get('modelId');
-      const item = this.graph.findById(id);
+      const curNodeId = target.get('modelId');
+      const item = this.graph.findById(curNodeId);
       const nodeModel = item.getModel();
-      nodeModel.collapsed = !nodeModel.collapsed;
-
-      // console.log(111, item)
-
-
-      this.graph.setItemState(item, 'collapse', nodeModel.collapsed);
-
       // 寻找所有子节点 隐藏或显示
-      let curNodes = [];
-      const edges = ghData.edges;
-      const findAllNodeFunc = (source) => {
-        const curEdges = edges.filter(el => {
-          return source === el.source;
-        })
-        if (curEdges.length > 0) {
-          curEdges.forEach(el => {
-            curNodes.push(el.target);
-            findAllNodeFunc(el.target)
-          })
+      let findResNodesIds = [];
+      // 寻找该节点下一层公司节点的所有子节点
+      const getFindResNodesIds = () => {
+        let resArr = [];
+        // 寻找该节点下一层公司节点的所有子节点
+        let targetCurNodes = ghData.edges.filter(el => el.source === curNodeId);
+        targetCurNodes = targetCurNodes.map(el => el.target);
+        let curNodes = [];
+        if (name === 'collapse-node1') {
+          curNodes = ghData.nodes.filter(el => targetCurNodes.includes(el.id) && !el.staff)
+        } else if (name === 'collapse-node2') {
+          curNodes = ghData.nodes.filter(el => targetCurNodes.includes(el.id) && el.staff)
         }
+        curNodes = curNodes.map(el => el.id);
+        resArr = curNodes;
 
+        curNodes.forEach(el => {
+          resArr = resArr.concat(this.findAllChildNodes(el))
+        })
+        resArr = [...new Set(resArr)];
+        return resArr
       }
-      findAllNodeFunc(id)
-      console.log("curNodes", curNodes)
-      // 隐藏或显示
-      curNodes.forEach(el => {
-        const curItem = this.graph.findById(el);
-        if (nodeModel.collapsed) {
-          this.graph.hideItem(curItem)
-        } else {
-          this.graph.showItem(curItem)
-        }
-      })
-      // 
-      // this.graph.layout();
+      // 只有公司或者员工
+      if (name === 'collapse-node3') {
+        nodeModel.collapsed3 = !nodeModel.collapsed3;
+        this.graph.setItemState(item, 'collapsed3', nodeModel.collapsed3);
+        findResNodesIds = this.findAllChildNodes(curNodeId);
+        // 隐藏或显示
+        findResNodesIds.forEach(el => {
+          const curItem = this.graph.findById(el);
+          if (nodeModel.collapsed3) {
+            this.graph.hideItem(curItem)
+          } else {
+            this.graph.showItem(curItem)
+          }
+        })
+        // 公司
+      } else if (name === 'collapse-node1') {
+        nodeModel.collapsed1 = !nodeModel.collapsed1;
+        this.graph.setItemState(item, 'collapsed1', nodeModel.collapsed1);
+        // 寻找该节点下一层公司节点的所有子节点
+        findResNodesIds = getFindResNodesIds();
+        // 隐藏或显示
+        findResNodesIds.forEach(el => {
+          const curItem = this.graph.findById(el);
+          if (nodeModel.collapsed1) {
+            this.graph.hideItem(curItem)
+          } else {
+            this.graph.showItem(curItem)
+          }
+        })
+        // 员工
+      } else if (name === 'collapse-node2') {
+        nodeModel.collapsed2 = !nodeModel.collapsed2;
+        this.graph.setItemState(item, 'collapsed2', nodeModel.collapsed2);
+        // 寻找该节点下一层员工节点的所有子节点
+        findResNodesIds = getFindResNodesIds();
+        // 隐藏或显示
+        findResNodesIds.forEach(el => {
+          const curItem = this.graph.findById(el);
+          if (nodeModel.collapsed2) {
+            this.graph.hideItem(curItem)
+          } else {
+            this.graph.showItem(curItem)
+          }
+        })
+      }
+
+      console.log("findResNodesIds", findResNodesIds)
+
+
     };
-    this.graph.on('collapse-node:click', (e) => {
-      console.log('collapse-node:click')
-      handleCollapse(e);
+    this.graph.on('collapse-node1:click', (e) => {
+      console.log('collapse-node1:click')
+      handleCollapse(e, 'collapse-node1');
     });
-    // this.graph.on('collapse-back:click', (e) => {
-    //   console.log('collapse-back:click')
-    //   handleCollapse(e);
-    // });
+    this.graph.on('collapse-node2:click', (e) => {
+      console.log('collapse-node2:click')
+      handleCollapse(e, 'collapse-node2');
+    });
+    this.graph.on('collapse-node3:click', (e) => {
+      console.log('collapse-node3:click')
+      handleCollapse(e, 'collapse-node3');
+    });
 
     // 鼠标悬浮节点
     this.graph.on('node:mouseenter', ({ item }) => {

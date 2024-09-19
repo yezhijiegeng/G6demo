@@ -1,10 +1,10 @@
 <template>
   <div class="demo1Page relative">
-    <div class="" style="position: absolute; top: 0;left: 0;">
+    <!-- <div class="" style="position: absolute; top: 0;left: 0;">
       <el-input style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" clearable
         placeholder="搜索"></el-input>
       <el-button type="primary" size="mini" @click="searchFunc">搜索</el-button>
-    </div>
+    </div> -->
     <div></div>
     <div id="mountNode1"></div>
   </div>

@@ -8,8 +8,6 @@ const data = {
             id: 'subTree1',
             name: '分公司1',
             stockProportion: 30,
-            hasChild: true,
-            collapsed: false,
             hightlight: false,
         },
         {
@@ -44,8 +42,6 @@ const data = {
             id: 'subTree2',
             name: '分公司2',
             stockProportion: 70,
-            hasChild: true,
-            collapsed: false,
         },
         {
             id: 'subTree2-1',
