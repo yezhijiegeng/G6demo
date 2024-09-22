@@ -1,8 +1,19 @@
 <template>
   <div class="home">
     <div class="" style="position: absolute; top: 0;left: 0;">
-      <el-input style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" clearable
-        placeholder="搜索"></el-input>
+      <!--<el-input style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" clearable
+        placeholder="搜索"></el-input> -->
+        <el-select style="width: 200px;margin-right: 10px;" size="mini" 
+        v-model.trim="searchVal"
+        filterable
+        placeholder="请选择" clearable>
+          <el-option
+            v-for="item in ghData.nodes"
+            :key="item.value"
+            :label="item.name"
+            :value="item.id">
+          </el-option>
+        </el-select>
       <el-button type="primary" size="mini" @click="searchFunc">搜索</el-button>
     </div>
     <div id="mountNode"></div>
@@ -47,6 +58,8 @@ export default {
     return {
       searchVal: '',
       lastSearch: [],
+      searchIds: [],
+      ghData,
     }
   },
   methods: {
@@ -61,14 +74,32 @@ export default {
         }
         this.graph.updateItem(item, model)
       })
-      if (this.searchVal.length > 0) {
-        const arr = ghData.nodes.filter(el => {
-          return el.name.includes(this.searchVal)
-        })
+      if (this.searchVal) {
+        // const cur = ghData.nodes.find(el => {
+        //   return el.name === this.searchVal
+        //   // return el.name.includes(this.searchVal)
+        // })
+        
+        let ids = [this.searchVal];
+        // 找到所有父节点，并且高亮
+        const finParentIdsFunc = (curId) => {
+          const curEdges = ghData.edges.filter(el => {
+            return curId === el.target;
+          })
+          if(curEdges.length > 0){
+            curEdges.forEach(el => {
+              ids.push(el.source)
+              finParentIdsFunc(el.source)
+            })
+          }
+        }
+        finParentIdsFunc(this.searchVal)
 
-        // 高亮
-        arr.forEach(el => {
-          let id = el.id;
+        this.searchIds = ids;
+
+        // 高亮节点
+        ids.forEach(el => {
+          let id = el;
           const item = this.graph.findById(id);
           let model = {
             ...el,
@@ -76,6 +107,18 @@ export default {
           }
           this.graph.updateItem(item, model)
         })
+        // 高亮
+        // arr.forEach(el => {
+        //   let id = el.id;
+        //   const item = this.graph.findById(id);
+        //   let model = {
+        //     ...el,
+        //     hightlight: true,
+        //   }
+        //   this.graph.updateItem(item, model)
+        // })
+      }else{
+        this.searchIds = [];
       }
       this.graph.render();
     },
@@ -126,6 +169,7 @@ export default {
       const _this = this
       G6.registerNode('icon-node', {
         draw(cfg, group) {
+          
           const isRoot = cfg.id === rootId //'根节点'
           // 取宽高的一半 后边的文本方便居中
           const x = -rectShapeWidth / 2
@@ -223,6 +267,23 @@ export default {
             })
           }
 
+          // 如果不是根节点，在上面加上折叠图标
+          // if(!isRoot){
+          //   group.addShape('marker', {
+          //     attrs: {
+          //       x: 0,
+          //       y: -22,
+          //       r: 6,
+          //       fill: '#fff',
+          //       stroke: '#4ea2f0',
+          //       cursor: 'pointer',
+          //       symbol: cfg.collapsedTop ? EXPAND_ICON : COLLAPSE_ICON // 图标的路径函数
+          //     },
+          //     name: 'collapse-node-top',
+          //     modelId: `${cfg.id}`,
+          //   })
+          // }
+
 
           // }
           return curShape
@@ -253,6 +314,12 @@ export default {
           } else if (name === 'collapsed2') {
             const group = item.getContainer();
             const collapseNode = group.find(ele => ele.get('name') === 'collapse-node2');
+            collapseNode.attr({
+              symbol: value ? EXPAND_ICON : COLLAPSE_ICON,
+            });
+          } else if (name === 'collapsedTop') {
+            const group = item.getContainer();
+            const collapseNode = group.find(ele => ele.get('name') === 'collapse-node-top');
             collapseNode.attr({
               symbol: value ? EXPAND_ICON : COLLAPSE_ICON,
             });
@@ -291,7 +358,8 @@ export default {
       G6.registerEdge('flow-line', {
         draw(cfg, group) {
           const sourceNodeModel = cfg.sourceNode.getModel();
-
+          // console.log(sourceNodeModel,11)
+        
           // 分别是边两端与起始节点和结束节点的交点
           const startPoint = cfg.startPoint;
           const endPoint = cfg.endPoint;
@@ -300,6 +368,12 @@ export default {
           // 只有一个节点默认从中间开始连线
           let startPointX = startPoint.x;
           let endPointX = endPoint.x;
+
+          let lightEdge  = false;
+          // 父节点和子节点都高亮，则高亮他们的连线
+          if(sourceNodeModel.hightlight && targetNodeModel.hightlight){
+            lightEdge = true;
+          }
 
           if (_this.checkCompanyNodeAndStaffNodeExist(sourceNodeModel.id)) {
             // 偏移量
@@ -315,7 +389,8 @@ export default {
           // 根据两个点画出想要的边
           const pathShape = group.addShape('path', {
             attrs: {
-              stroke: '#eee',
+              stroke: lightEdge ? 'red' : '#4ea2f0',
+              // stroke: '#eee',
               // svg path
               // https://developer.mozilla.org/zh-CN/docs/Web/SVG/Tutorial/Paths
               // path: [
@@ -522,6 +597,20 @@ export default {
             this.graph.showItem(curItem)
           }
         })
+      }else if('collapse-node-top'){
+        nodeModel.collapsedTop = !nodeModel.collapsedTop;
+        this.graph.setItemState(item, 'collapsedTop', nodeModel.collapsedTop);
+        findResNodesIds = this.findAllChildNodes(curNodeId);
+        findResNodesIds.unshift(curNodeId);
+        // 隐藏或显示
+        findResNodesIds.forEach(el => {
+          const curItem = this.graph.findById(el);
+          if (nodeModel.collapsedTop) {
+            this.graph.hideItem(curItem)
+          } else {
+            this.graph.showItem(curItem)
+          }
+        })
       }
 
       console.log("findResNodesIds", findResNodesIds)
@@ -539,6 +628,10 @@ export default {
     this.graph.on('collapse-node3:click', (e) => {
       console.log('collapse-node3:click')
       handleCollapse(e, 'collapse-node3');
+    });
+    this.graph.on('collapse-node-top:click', (e) => {
+      console.log('collapse-node-top:click')
+      handleCollapse(e, 'collapse-node-top');
     });
 
     // 鼠标悬浮节点
@@ -597,6 +690,19 @@ export default {
     this.graph.get('canvas').set('localRefresh', false)
     this.graph.read(ghData)
     this.graph.fitCenter()
+
+    // ghData.nodes.forEach(el => {
+    //   let id = el.id;
+    //   const item = this.graph.findById(id);
+    //   let model = {
+    //     ...el,
+    //     collapsed1: true,
+    //     collapsed2: true,
+    //     collapsed3: true,
+    //   }
+    //   this.graph.updateItem(item, model)
+    //   // this.graph.hideItem(item);
+    // })
 
   },
 }
