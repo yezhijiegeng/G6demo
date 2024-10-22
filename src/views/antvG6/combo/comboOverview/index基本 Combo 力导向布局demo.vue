@@ -461,38 +461,7 @@ export default {
         minZoom: 0.00000001,
         layout: {
           type: "comboForce",
-          center: [200, 200],
           nodeSpacing: (d) => 8,
-          linkDistance: 100, // 可选，边长
-          // preventOverlap:true, // 是否防止节点之间以及 combo 之间的重叠
-          preventComboOverlap: true, // 是否防止节点之间的重叠。必须配合下面属性 nodeSize 或节点数据中的 size 属性
-          comboGravity: 10,
-          nodeSize: 1, // 节点大小（直径）。用于碰撞检测。若不指定，则根据传入的节点的 size 属性计算。若即不指定，节点中也没有 size，则默认大小为 10
-          preventNodeOverlap: true, // 是否防止节点之间的重叠。必须配合下面属性 nodeSize 或节点数据中的 size 属性
-          nodeSpacing:20, // 防止重叠时节点边缘间距的最小值。
-          comboSpacing:10,
-          comboPadding:20,
-          gravity:10, // 重力的大小，影响布局的紧凑程度
-          // depthAttractiveForceScale:0.5, // 根据边两端节点层级差距的调整引力的系数的因子，取值范围 [0, 1]。层级差距越大，引力越小
-          depthRepulsiveForceScale:2, // 根据边两端节点层级差距的调整斥力系数的因子，取值范围 [1, Infinity]。层级差距越大，斥力越大
-          // comboGravity:30, // 每个 combo 内部的重力大小，影响聚类的紧凑程度
-          // alphaDecay:0.028,
-          // alpha:1,
-          // collideStrength:undefined, // 统一设置防止节点之间以及 combo 之间重叠的力强度，范围 [0, 1]。
-          // linkDistance:100,
-          // maxIteration:100, // 最大迭代次数
-          // depthAttractiveForceScale:20,
-          // nodeSpacing:5,
-          // nodeStrength: 30, // 节点作用力
-          // edgeStrength: 0.1,        // 可选
-          onTick: () => {
-            // 可选
-            console.log("ticking");
-          },
-          onLayoutEnd: () => {
-            // 可选
-            console.log("combo force layout done");
-          },
         },
         defaultNode: {
           size: 15,

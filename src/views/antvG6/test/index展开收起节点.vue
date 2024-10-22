@@ -20,9 +20,7 @@
         </el-option>
       </el-select>
       <el-button type="primary" size="mini" @click="searchFunc">搜索</el-button>
-      <el-button type="primary" size="mini" @click="onCollapse(false)"
-        >展开</el-button
-      >
+      <el-button type="primary" size="mini" @click="onCollapse(false)">展开</el-button>
       <el-button size="mini" @click="onCollapse(true)">收起</el-button>
     </div>
     <div id="mountNode"></div>
@@ -510,22 +508,16 @@ export default {
 
     this.graph = new G6.Graph({
       container: "mountNode",
-      width: 1400,
-      height: 1000,
+      width: 800,
+      height: 800,
       fitView: true,
       layout: {
         type: "dagre",
         // direction: 'V',
         rankdir: "TB", // 可选，默认为图的中心
         // align: 'DL', // 可选
-        nodesep: 100, // 可选 节点间距
-        ranksep: 100, // 可选 层间距
-        // controlPoints:true, // 是否保留布局连线的控制点
-        // nodeOrder:[]  // 同层节点顺序的参考数组，存放节点 id 值。
-        //  preset: undefined // 布局计算时参考的节点位置
-        // sortByCombo:true,
-        // nodesepFunc:()=>{}, // 可以对不同节点设置不同的节点间距
-        // ranksepFunc:()=>{}, // 通过该参数可以对不同节点设置不同的层间距。
+        nodesep: 50, // 可选
+        ranksep: 40, // 可选
         // controlPoints: true, // 可选
       },
       modes: {

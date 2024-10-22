@@ -39,19 +39,19 @@ export const domNodeData = {
       label: "同一实控人",
       type: "icon-node" /*  type: "dom-node"  */,
     },
-    { id: "node2", x: 50, y: 200, label: "邓冠华" ,type:'icon-node'},
-    { id: "node3", x: 550, y: 200, label: "蒋广成" ,type:'icon-node'},
-    { id: "node4", x: 250, y: 200, label: "马玉国" ,type:'icon-node'},
-    { id: "node5", x: 350, y: 200, label: "周明萱" ,type:'icon-node'},
-    { id: "node6", x: 350, y: 400, label: "周明萱" ,type:'icon-node'},
+    { id: "node2", x: 50, y: 200, label: "邓冠华", type: "icon-node" },
+    { id: "node3", x: 550, y: 200, label: "蒋广成", type: "icon-node" },
+    { id: "node4", x: 250, y: 200, label: "马玉国", type: "icon-node" },
+    { id: "node5", x: 350, y: 200, label: "周明萱", type: "icon-node" },
+    { id: "node6", x: 350, y: 400, label: "周明萱", type: "icon-node" },
     // { id: "node4", x: 250, y: 300, label: "马玉国",type: 'rect',  },
   ],
   edges: [
-    { source: "node1", target: "node2"},
+    { source: "node1", target: "node2" },
     {
       source: "node1",
       target: "node3",
-     /*  size: 10,
+      /*  size: 10,
       label: "line2",
       position: "end", */
     },
@@ -83,94 +83,96 @@ export const commonNodeData = {
   ],
 };
 
-
 export const ghData = {
-	nodes: [
-			{
-					id: 'rootId',
-					name: '总公司',
-			},
-			{
-					id: 'subTree1',
-					name: '分公司1',
-					stockProportion: 30,
-					hightlight: false,
-			},
-			{
-					id: 'subTree1-1',
-					name: "分公司1-1",
-					stockProportion: 90,
-			},
-			{
-					id: 'subTree1-1-1',
-					name: "分公司1-1-1",
-					stockProportion: 100,
-			},
-			{
-					id: 'subTree1-2',
-					name: "员工1-2",
-					staff: true,
-					stockProportion: 10,
-			},
-			{
-					id: 'subTree1-2-1',
-					name: "员工1-2-1",
-					staff: true,
-					stockProportion: 10,
-			},
-			{
-					id: 'subTree1-2-2',
-					name: "员工1-2-2",
-					staff: true,
-					stockProportion: 10,
-			},
-			{
-					id: 'subTree2',
-					name: '分公司2',
-					stockProportion: 70,
-			},
-			{
-					id: 'subTree2-1',
-					name: '分公司2-1',
-					stockProportion: 100,
-			},
-	],
-	edges: [
-			{
-					source: 'rootId',
-					target: 'subTree1',
-			},
-			{
-					source: 'subTree1',
-					target: 'subTree1-1',
-			},
-			{
-					source: 'subTree1',
-					target: 'subTree1-2',
-			},
-			{
-					source: 'rootId',
-					target: 'subTree2',
-			},
-			{
-					source: 'subTree2',
-					target: 'subTree2-1',
-			},
-			{
-					source: 'subTree1-1',
-					target: 'subTree1-1-1',
-			},
-			{
-					source: 'subTree1',
-					target: 'subTree2-1',
-			},
-			{
-					source: 'subTree1-2',
-					target: 'subTree1-2-1',
-			},
-			{
-					source: 'subTree1-2',
-					target: 'subTree1-2-2',
-			},
-	],
-}
+  nodes: [
+    {
+      id: "rootId",
+      name: "总公司",
+    },
+    {
+      id: "subTree1",
+      name: "分公司1",
+      stockProportion: 30,
+      hightlight: false,
+    },
+    {
+      id: "subTree1-1",
+      name: "分公司1-1",
+      stockProportion: 90,
+      comboId: "combos1",
+    },
+    {
+      id: "subTree1-1-1",
+      name: "分公司1-1-1",
+      stockProportion: 100,
+      comboId: "combos1",
+    },
+    {
+      id: "subTree1-2",
+      name: "员工1-2",
+      staff: true,
+      stockProportion: 10,
+    },
+    {
+      id: "subTree1-2-1",
+      name: "员工1-2-1",
+      staff: true,
+      stockProportion: 10,
+    },
+    {
+      id: "subTree1-2-2",
+      name: "员工1-2-2",
+      staff: true,
+      stockProportion: 10,
+    },
+    {
+      id: "subTree2",
+      name: "分公司2",
+      stockProportion: 70,
+    },
+    {
+      id: "subTree2-1",
+      name: "分公司2-1",
+      stockProportion: 100,
+    },
+  ],
+  edges: [
+    {
+      source: "rootId",
+      target: "subTree1",
+    },
+    {
+      source: "subTree1",
+      target: "subTree1-1",
+    },
+    {
+      source: "subTree1",
+      target: "subTree1-2",
+    },
+    {
+      source: "rootId",
+      target: "subTree2",
+    },
+    {
+      source: "subTree2",
+      target: "subTree2-1",
+    },
+    {
+      source: "subTree1-1",
+      target: "subTree1-1-1",
+    },
+    {
+      source: "subTree1",
+      target: "subTree2-1",
+    },
+    {
+      source: "subTree1-2",
+      target: "subTree1-2-1",
+    },
+    {
+      source: "subTree1-2",
+      target: "subTree1-2-2",
+    },
+    
+  ],
+};

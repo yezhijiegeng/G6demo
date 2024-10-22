@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>点击扩展节点</title>
+    <style>::-webkit-scrollbar{display:none;}html,body{overflow:hidden;margin:0;}</style>
+</head>
+<body>
+<div id="mountNode"></div>
+<script>/*Fixing iframe window.innerHeight 0 issue in Safari*/document.body.clientHeight;</script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.1/build/g6.js"></script>
+<script>
+  /**
+   * 该示例演示在力导布局中实现点击节点扩展相关点，并且固定被点击的节点
+   * by 十吾
+   */
+  var getNodeById = {
+    data: {
+      nodes: [{
+        id: "20",
+        label: "name1"
+    }, {
+        id: "1",
+        label: "name2"
+    }],
+      edges: [{
+        source: "20",
+        target: "1"
+    }]
+    }
+
+    // 根据节点扩展
+  };
+  var getNodesByNodeId = {
+    data: {
+      nodes: [{
+        id: "20",
+        label: "祁同伟"
+    }, {
+        id: "22",
+        label: "高晓秦"
+    }, {
+        id: "10",
+        label: "高育良"
+    }, {
+        id: "12",
+        label: "高晓凤"
+    }, {
+        id: "21",
+        label: "梁璐"
+    }, {
+        id: "11",
+        label: "吴淑芬"
+    }, {
+        id: "100",
+        label: "小米"
+    }, {
+        id: "102",
+        label: "茅台"
+    }],
+      edges: [{
+        target: "100",
+        source: "20"
+    }, {
+        target: "102",
+        source: "20"
+    }, {
+        target: "10",
+        source: "20"
+    }, {
+        target: "11",
+        source: "20"
+    }, {
+        target: "21",
+        source: "20"
+    }, {
+        target: "21",
+        source: "20"
+    }, {
+        target: "22",
+        source: "20"
+    }, {
+        target: "11",
+        source: "10"
+    }, {
+        target: "12",
+        source: "10"
+    }, {
+        target: "22",
+        source: "21"
+    }, {
+        target: "22",
+        source: "12"
+    }]
+    }
+
+    // 根据节点扩展
+  };
+  var getNodesByNodeId2 = {
+    data: {
+      nodes: [{
+        id: "22",
+        label: "高晓秦"
+    }, {
+        id: "1000",
+        label: "晓秦1"
+    }, {
+        id: "1001",
+        label: "晓秦2"
+    }, {
+        id: "1002",
+        label: "晓秦3"
+    }, {
+        id: "1003",
+        label: "晓秦4"
+    }, {
+        id: "1004",
+        label: "晓秦5"
+    }],
+      edges: [{
+        target: "22",
+        source: "1000"
+    }, {
+        target: "22",
+        source: "1001"
+    }, {
+        target: "22",
+        source: "1002"
+    }, {
+        target: "1001",
+        source: "1002"
+    }, {
+        target: "1000",
+        source: "1"
+    }, {
+        target: "20",
+        source: "1002"
+    }, {
+        target: "22",
+        source: "1003"
+    }, {
+        target: "22",
+        source: "1004"
+    }]
+    }
+  };
+
+  var clickedNodeId = -1;
+  var clickedNodePos = {
+    'x': 500,
+    'y': 300
+  };
+
+  // 封装点击添加边的交互
+  G6.registerBehavior('click-add-node', {
+    getEvents: function getEvents() {
+      return {
+        'node:click': 'onClick'
+      };
+    },
+    onClick: function onClick(ev) {
+      var itemModel = ev.item.getModel();
+      clickedNodeId = itemModel.id;
+      clickedNodePos.x = itemModel.x;
+      clickedNodePos.y = itemModel.y;
+      var graph = this.graph;
+      var nodes = graph.getNodes();
+      var edges = graph.getEdges();
+      var newData = getNodeById.data;
+      if (itemModel.id == 20) newData = getNodesByNodeId.data;
+      else if (itemModel.id == 22) newData = getNodesByNodeId2.data;
+      var newNodeModels = newData.nodes;
+      var newEdgeModels = newData.edges;
+      var allNodeModels = [],
+        allEdgeModels = [];
+
+      // fix the existing nodes by set the fx and fy to the current value
+      // to cancel the fix the node, set fx = null fy = null
+      nodes.forEach(function(n, i) {
+        var model = n.getModel();
+        model.fixed = true;
+        model.fx = model.x;
+        model.fy = model.y;
+        allNodeModels.push(model);
+      });
+
+      newNodeModels.forEach(function(nodeModel, i) {
+        // if it does not exist in nodes
+        var exist = false;
+        nodes.forEach(function(n, i) {
+          if (n.getModel().id == nodeModel.id) {
+            exist = true;
+            return;
+          }
+        });
+        // then add it into graph
+        if (!exist) {
+          // set the initial positions of the new nodes at the clicked node
+          nodeModel.x = itemModel.x;
+          nodeModel.y = itemModel.y;
+          var node = graph.addItem('node', nodeModel);
+          allNodeModels.push(nodeModel);
+          nodes.push(node);
+        }
+      });
+
+      newEdgeModels.forEach(function(em, i) {
+        // if it does not exist in nodes
+        var exist = false;
+        edges.forEach(function(e, i) {
+          var eModel = e.getModel();
+          if (eModel.source == em.source && eModel.target == em.target) {
+            exist = true;
+            return;
+          }
+        });
+        if (!exist) {
+          var edge = graph.addItem('edge', em);
+          edges.push(edge);
+        }
+      });
+      edges.forEach(function(e, i) {
+        allEdgeModels.push(e.getModel());
+      });
+
+      graph.changeData({
+        nodes: allNodeModels,
+        edges: allEdgeModels
+      });
+    }
+  });
+
+  var data = getNodeById.data;
+
+  var graph = new G6.Graph({
+    container: 'mountNode',
+    width: window.innerWidth,
+    height: window.innerHeight,
+    layout: {
+      type: 'force',
+      // 向心力作用点
+      nodeStrength: -30,
+      // 节点作用力
+      preventOverlap: true,
+      // 是否防止节点相互覆盖
+      nodeSize: 40,
+      // 节点大小 / 直径
+      edgeStrength: 0.1,
+      // 边的作用力, 默认为根据节点的入度出度自适应
+      linkDistance: 100
+      // 默认边长度
+    },
+    modes: {
+      default: ['drag-node', 'click-select', 'click-add-node']
+    },
+    defaultNode: {
+      size: [40, 40],
+      color: 'steelblue'
+    },
+    defaultEdge: {
+      size: 1,
+      color: '#e2e2e2'
+    },
+    nodeStateStyles: {
+      selected: {
+        fill: 'steelblue'
+      }
+    }
+  });
+
+  var descriptionDiv = document.createElement("div");
+  descriptionDiv.innerHTML = '点击节点“name1”或“高晓秦”试一试';
+  var graphDiv = document.getElementById("mountNode");
+  document.body.insertBefore(descriptionDiv, graphDiv);
+
+  graph.data(data);
+  graph.render();
+
+  graph.on('node:dragend', function(ev) {
+    var itemModel = ev.item.getModel();
+    itemModel.fixed = true;
+    itemModel.fx = ev.x;
+    itemModel.fy = ev.y;
+  });
+</script></body>
+</html>

@@ -20,10 +20,6 @@
         </el-option>
       </el-select>
       <el-button type="primary" size="mini" @click="searchFunc">搜索</el-button>
-      <el-button type="primary" size="mini" @click="onCollapse(false)"
-        >展开</el-button
-      >
-      <el-button size="mini" @click="onCollapse(true)">收起</el-button>
     </div>
     <div id="mountNode"></div>
   </div>
@@ -133,7 +129,7 @@ export default {
     },
     fittingString(str, maxWidth, fontSize, cfg) {
       if (!str) {
-        return "1234";
+        return "123";
       }
       let currentWidth = 0;
       let res = str;
@@ -483,95 +479,51 @@ export default {
         },
       });
     },
-    spreadAll() {
-      debugger;
-
-      const findResNodesIds = this.findAllChildNodes("rootId");
-      findResNodesIds.forEach((el) => {
-        const curItem = this.graph.findById(el);
-        this.graph.showItem(curItem);
-      });
-    },
-    onCollapse(collapse) {
-      const findResNodesIds = this.findAllChildNodes("rootId");
-      findResNodesIds.forEach((el) => {
-        const curItem = this.graph.findById(el);
-        if (collapse) {
-          this.graph.hideItem(curItem);
-        }else {
-          this.graph.showItem(curItem);
-        }
-      });
-    },
   },
   mounted() {
     // 生成实例
     // const graph = new G6.TreeGraph({
-
     this.graph = new G6.Graph({
       container: "mountNode",
-      width: 1400,
-      height: 1000,
+      width: 800,
+      height: 800,
       fitView: true,
-      layout: {
-        type: "dagre",
-        // direction: 'V',
-        rankdir: "TB", // 可选，默认为图的中心
-        // align: 'DL', // 可选
-        nodesep: 100, // 可选 节点间距
-        ranksep: 100, // 可选 层间距
-        // controlPoints:true, // 是否保留布局连线的控制点
-        // nodeOrder:[]  // 同层节点顺序的参考数组，存放节点 id 值。
-        //  preset: undefined // 布局计算时参考的节点位置
-        // sortByCombo:true,
-        // nodesepFunc:()=>{}, // 可以对不同节点设置不同的节点间距
-        // ranksepFunc:()=>{}, // 通过该参数可以对不同节点设置不同的层间距。
-        // controlPoints: true, // 可选
-      },
       modes: {
-        default: [
-          "drag-canvas",
-          {
-            type: "zoom-canvas",
-            sensitivity: 1, // 缩放灵敏度
-            minZoom: 0.5,
-            maxZoom: 1.5,
+        default: ["drag-canvas", "zoom-canvas"],
+      },
+      layout: {
+        type: "dagreCombo", // 使用 dagreCombo 布局
+        direction: "TB", // 垂直布局（从上到下）
+        rankdir: "TB", // 同上，指定层次方向
+        nodesep: 50, // 节点之间的垂直间距
+        ranksep: 100, // 层级之间的水平间距（在垂直布局中影响不大，但仍可调整）
+        comboConfig: {
+          // Combo 配置
+          type: "rect", // Combo 形状
+          style: {
+            fill: "#f0f0f0", // Combo 填充色
+            stroke: "#ccc", // Combo 边框色
           },
-        ],
-      },
-      defaultCombo: {
-        comboPadding: 20,
-        style: {
-          fill: "pink",
-          fillOpacity: 0.1,
-          stroke: "#99C0ED",
-          // lineWidth: 5,
+          collapseExpand: true, // 是否允许折叠/展开 Combo
         },
-        // 指定 Combo 类型，也可以将 type 写到 combo 数据中
-        // type: "cRect",
-        // ... 此处可配置默认 Combo 的其他样式
       },
-      /*  defaultCombo: {
-        // The type of the combos. You can also assign type in the data of combos
-        type: "circle",
-        labelCfg: {
-          refY: 2,
-        },
-        // ... Other global configurations for combos
-      }, */
       defaultNode: {
-        // 使用自定义节点
-        type: "icon-node",
-        // 节点的连接点
-        // https://g6.antv.antgroup.com/manual/middle/elements/nodes/anchorpoint
-        anchorPoints: [
-          [0.5, 0],
-          [0.5, 1],
-        ],
+        type: "rect", // 节点形状
+        size: [100, 40], // 节点大小
+        style: {
+          fill: "#9EC9FF", // 节点填充色
+          stroke: "#5B8FF9", // 节点边框色
+        },
+        labelCfg: {
+          style: {
+            fill: "#000", // 节点标签文字颜色
+          },
+        },
       },
       defaultEdge: {
-        // 使用自定义边
-        type: "flow-line",
+        style: {
+          stroke: "#A3B1BF", // 边颜色
+        },
       },
     });
 
@@ -765,6 +717,55 @@ export default {
     //   this.graph.updateItem(item, model)
     //   // this.graph.hideItem(item);
     // })
+    let centerNodes = this.graph.getNodes().filter((node) => {
+      return node.getModel().staff;
+    });
+    this.graph.on("afterlayout", () => {
+      // descriptionDiv.innerHTML = "";
+      /* const hull1 = this.graph.createHull({
+        id: "centerNode-hull",
+        type: "bubble",
+        members: centerNodes,
+        padding: 10,
+      });
+
+      const hull2 = this.graph.createHull({
+        id: "leafNode-hull1",
+        members: ["subTree1", "subTree1-1"],
+        padding: 10,
+        style: {
+          fill: "lightgreen",
+          stroke: "green",
+        },
+      });
+
+      const hull3 = this.graph.createHull({
+        id: "leafNode-hull2",
+        members: ["subTree1-2-1", "subTree1-2-2"],
+        padding: 10,
+        style: {
+          fill: "lightgreen",
+          stroke: "green",
+        },
+      }); */
+
+      const hull4 = this.graph.createHull({
+        id: "leafNode-hull1",
+        members: centerNodes,
+        padding: 10,
+        style: {
+          fill: "lightgreen",
+          stroke: "green",
+        },
+      });
+
+      this.graph.on("afterupdateitem", (e) => {
+        /*  hull1.updateData(hull1.members);
+        hull2.updateData(hull2.members);
+        hull3.updateData(hull3.members); */
+        hull3.updateData(hull4.members);
+      });
+    });
   },
 };
 </script>

@@ -609,6 +609,7 @@ methods: {
         outerLayout: new G6.Layout["forceAtlas2"]({
           kr: 10,
         }),
+        // direction: 'TB', // 垂直布局（从上到下）  
       },
       defaultNode: {
         size: 15,
