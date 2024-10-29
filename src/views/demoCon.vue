@@ -17,12 +17,17 @@
             <i class="el-icon-document"></i>
             <span slot="title">demo3</span>
           </el-menu-item>
+          <el-menu-item index="4">
+            <i class="el-icon-document"></i>
+            <span slot="title">demo4</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
       <el-main>
         <demo1 class="h-full w-full" v-if="activeName === '1'" />
         <demo2 class="h-full w-full" v-if="activeName === '2'" />
         <demo3 class="h-full w-full" v-if="activeName === '3'" />
+        <demo4 class="h-full w-full" v-if="activeName === '4'" />
       </el-main>
     </el-container>
   </el-container>
@@ -32,16 +37,18 @@
 import demo1 from './demo1.vue'
 import demo2 from './demo2.vue'
 import demo3 from './demo3.vue'
+import demo4 from './demo4.vue'
 export default {
   name: 'HomeView',
   components: {
     demo1,
     demo2,
     demo3,
+    demo4,
   },
   data() {
     return {
-      activeName: '3',
+      activeName: '2',
     }
   },
   methods: {

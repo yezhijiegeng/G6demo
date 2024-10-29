@@ -3,17 +3,11 @@
     <div class="" style="position: absolute; top: 0;left: 0;">
       <!--<el-input style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" clearable
         placeholder="搜索"></el-input> -->
-        <el-select style="width: 200px;margin-right: 10px;" size="mini" 
-        v-model.trim="searchVal"
-        filterable
+      <el-select style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" filterable
         placeholder="请选择" clearable>
-          <el-option
-            v-for="item in ghData.nodes"
-            :key="item.value"
-            :label="item.name"
-            :value="item.id">
-          </el-option>
-        </el-select>
+        <el-option v-for="item in ghData.nodes" :key="item.value" :label="item.name" :value="item.id">
+        </el-option>
+      </el-select>
       <el-button type="primary" size="mini" @click="searchFunc">搜索</el-button>
     </div>
     <div id="mountNode"></div>
@@ -22,9 +16,9 @@
 
 <script>
 // @ is an alias to /src
-import G6 from '@antv/g6';
+import G6 from 'g6V4';
 // import data from './data'
-import ghData from './dataGraph2'
+import ghData from './mockData/dataGraph2'
 
 const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
   return [
@@ -79,14 +73,14 @@ export default {
         //   return el.name === this.searchVal
         //   // return el.name.includes(this.searchVal)
         // })
-        
+
         let ids = [this.searchVal];
         // 找到所有父节点，并且高亮
         const finParentIdsFunc = (curId) => {
           const curEdges = ghData.edges.filter(el => {
             return curId === el.target;
           })
-          if(curEdges.length > 0){
+          if (curEdges.length > 0) {
             curEdges.forEach(el => {
               ids.push(el.source)
               finParentIdsFunc(el.source)
@@ -117,7 +111,7 @@ export default {
         //   }
         //   this.graph.updateItem(item, model)
         // })
-      }else{
+      } else {
         this.searchIds = [];
       }
       this.graph.render();
@@ -169,7 +163,7 @@ export default {
       const _this = this
       G6.registerNode('icon-node', {
         draw(cfg, group) {
-          
+
           const isRoot = cfg.id === rootId //'根节点'
           // 取宽高的一半 后边的文本方便居中
           const x = -rectShapeWidth / 2
@@ -359,7 +353,7 @@ export default {
         draw(cfg, group) {
           const sourceNodeModel = cfg.sourceNode.getModel();
           // console.log(sourceNodeModel,11)
-        
+
           // 分别是边两端与起始节点和结束节点的交点
           const startPoint = cfg.startPoint;
           const endPoint = cfg.endPoint;
@@ -369,9 +363,9 @@ export default {
           let startPointX = startPoint.x;
           let endPointX = endPoint.x;
 
-          let lightEdge  = false;
+          let lightEdge = false;
           // 父节点和子节点都高亮，则高亮他们的连线
-          if(sourceNodeModel.hightlight && targetNodeModel.hightlight){
+          if (sourceNodeModel.hightlight && targetNodeModel.hightlight) {
             lightEdge = true;
           }
 
@@ -597,7 +591,7 @@ export default {
             this.graph.showItem(curItem)
           }
         })
-      }else if('collapse-node-top'){
+      } else if ('collapse-node-top') {
         nodeModel.collapsedTop = !nodeModel.collapsedTop;
         this.graph.setItemState(item, 'collapsedTop', nodeModel.collapsedTop);
         findResNodesIds = this.findAllChildNodes(curNodeId);
