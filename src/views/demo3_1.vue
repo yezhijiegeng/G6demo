@@ -14,7 +14,7 @@
 // @ is an alias to /src
 import G6 from '@antv/g6';
 // import data from './data'
-import ghData from './dataGraph2'
+import ghData from './mockData/dataGraph2'
 
 const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
   return [

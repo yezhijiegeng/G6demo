@@ -12,8 +12,9 @@
 
 <script>
 // @ is an alias to /src
-import { Graph } from 'g6V5';
-import ghData from './dataGraph3'
+import { Graph } from '@antv/g6';
+// import { Graph } from 'g6V5';
+import ghData from './mockData/dataGraph3'
 export default {
   name: 'HomeView',
   components: {
