@@ -37,6 +37,12 @@ const routes = [
         component: () => import("../views/antvG6/test/index.vue"),
       },
       {
+        path: "groupOverview",
+        name: "groupOverview",
+        component: () =>
+          import("../views/antvG6/groupOverview/index.vue"),
+      },
+      {
         path: "comboRelatedLayout",
         name: "comboRelatedLayout",
         component: () =>

@@ -3,7 +3,6 @@ const data = {
     {
       id: "rootId",
       name: "总公司1",
-      comboId: "combo0",
     },
     {
       id: "subTree1",
@@ -67,7 +66,7 @@ const data = {
       stockProportion: 30,
       hightlight: false,
       staff: true,
-      comboId: "combo0",
+      comboId: "combo3",
     },
     {
       id: "subTree4",
@@ -82,7 +81,7 @@ const data = {
       stockProportion: 30,
       hightlight: false,
       staff: true,
-      comboId: "combo0",
+      comboId: "combo3",
     },
     {
       id: "subTree6",
@@ -140,29 +139,29 @@ const data = {
       source: "subTree1",
       target: "subTree2-1",
     },
-    /* {
-      source: "subTree1-2",
+    {
+      source: "subTree1",
       target: "subTree1-2-1",
-    }, */
+    },
     {
       source: "subTree1-2-1",
       target: "subTree1-1-1",
     }, 
     {
-      source: "subTree1-2",
+      source: "subTree1",
       target: "subTree1-2-2",
     },
     {
-      source: "subTree3",
-      target: "rootId",
+      source: "rootId",
+      target: "subTree3",
     },
     {
       source: "rootId",
       target: "subTree4",
     },
     {
-      source: "subTree5",
-      target: "rootId",
+      source: "rootId",
+      target: "subTree5",
     },
     {
       source: "rootId",
@@ -180,18 +179,34 @@ const data = {
       source: "subTree1-2-1",
       target: "subTree8",
     },
+    {
+      source: "subTree2",
+      target: "subTree4",
+    },
+   /* {
+      source: "subTree1-1-1",
+      target: "subTree1",
+    },
+     {
+      source: "subTree1-1-1",
+      target: "subTree1",
+    },
+    {
+      source: "subTree1",
+      target: "subTree2",
+    }, */
   ],
 
   combos: [
     // { id: "combo1", label: "Combo 1", parentId: "combo2" },
 
-    {
+    /* {
       id: "combo0",
       label: "Combo 0",
-    },
+    }, */
     {
       id: "combo1",
-      label: "Combo 1",
+      label: "实控集团 1",
       /* style: {
         fill: "pink",
         stroke: "#C4E3B2",
@@ -200,7 +215,7 @@ const data = {
 
     {
       id: "combo2",
-      label: "Combo 2",
+      label: "实控集团 2",
       /*  style: {
         stroke: "#99C0ED",
         fill: "#99C0ED",
@@ -208,7 +223,7 @@ const data = {
     },
     {
       id: "combo3",
-      label: "Combo 3",
+      label: "实控集团 3",
       /*  style: {
         stroke: "#99C0ED",
         fill: "#99C0ED",
