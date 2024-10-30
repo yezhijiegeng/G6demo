@@ -93,7 +93,7 @@ export default {
           curState.push('myHighlight');
           stateObj[id] = curState;
         })
-
+        // 高亮边
         let edgesIds = ghData.edges.filter(item => nodeIds.includes(item.source) && nodeIds.includes(item.target)).map(ele => ele.id);
         edgesIds = [...new Set(edgesIds)];
         edgesIds.forEach(el => {
