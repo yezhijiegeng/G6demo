@@ -112,72 +112,50 @@ const data = {
         //     target: 'subTree1',
         // },
         {
+            id: 'edges1',
             source: 'rootId',
-            target: 'rootStaffId1',
+            target: 'subTree1',
+            // states: ['myHighlight']
         },
         {
-            source: 'rootId',
-            target: 'rootStaffId2',
-        },
-        {
-            source: 'rootId',
-            target: 'rootStaffId3',
-        },
-        // {
-        //     source: 'rootId',
-        //     target: 'subTree4',
-        // },
-        {
-            source: 'rootStaffId1',
+            id: 'edges2',
+            source: 'subTree1',
             target: 'subTree1-1',
         },
         {
+            id: 'edges3',
+            source: 'subTree1',
+            target: 'subTree1-2',
+        },
+        {
+            id: 'edges4',
+            source: 'rootId',
+            target: 'subTree2',
+        },
+        {
+            id: 'edges5',
+            source: 'subTree2',
+            target: 'subTree2-1',
+        },
+        {
+            id: 'edges6',
             source: 'subTree1-1',
             target: 'subTree1-1-1',
         },
         {
-            source: 'rootStaffId1',
-            target: 'subTree1-2',
-        },
-        {
-            source: 'rootStaffId1',
-            target: 'subTree1-3',
-        },
-        // {
-        //     source: 'rootId',
-        //     target: 'subTree2',
-        // },
-        {
-            source: 'rootStaffId1',
+            id: 'edges7',
+            source: 'subTree1',
             target: 'subTree2-1',
         },
         {
-            source: 'rootStaffId1',
-            target: 'subTree1-4',
-        },
-        // {
-        //     source: 'subTree1-1',
-        //     target: 'subTree1-1-1',
-        // },
-        {
-            source: 'rootStaffId2',
-            target: 'subTree2-1',
+            id: 'edges8',
+            source: 'subTree1-2',
+            target: 'subTree1-2-1',
         },
         {
-            source: 'subTree1-3',
-            target: 'subTree1-3-1',
-        },
-        {
-            source: 'subTree1-3-1',
-            target: 'subTree1-1',
-        },
-        {
-            source: 'subTree1-3',
-            target: 'subTree1-3-2',
-        },
-        {
-            source: 'subTree1-3',
-            target: 'subTree1-3-3',
+            id: 'edges9',
+            source: 'subTree1-2',
+            target: 'subTree1-2-2',
         },
     ],
     combos: [
