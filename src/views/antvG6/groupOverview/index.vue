@@ -4,7 +4,7 @@
   </div>
 </template>
 <script>
-import { Graph, register, ExtensionCategory } from "g6V5";
+import { Graph, register, ExtensionCategory } from "@antv/g6";
 import { drageData } from "./dataGraph";
 // import CustomNode from "./customNode.ts";
 export default {

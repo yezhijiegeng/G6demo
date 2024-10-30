@@ -1,4 +1,4 @@
-import { BaseNode } from 'g6V5';
+import { BaseNode } from '@antv/g6';
 import { Circle } from '@antv/g';
 
 // import type { Group } from '@antv/g';

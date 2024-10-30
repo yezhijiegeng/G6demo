@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { Graph } from "g6V5";
+import { Graph } from "@antv/g6";
 export default {
   mounted() {
     const graph = new Graph({
