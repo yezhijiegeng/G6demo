@@ -224,6 +224,7 @@ export default {
         // const item = ghData.nodes.find(el => el.id === this.attributes.name);
         const item = _this.graph.getNodeData(this.attributes.name);
         let curState = _this.graph.getElementState(this.attributes.name);
+        // 高亮自定义节点
         if (curState.includes('myHighlight')) {
           // console.log(this.attributes.name, curState);
           if (item.staff) {
@@ -235,6 +236,7 @@ export default {
               stroke: 'red',
             }, this);
           }
+          // 高亮自定义节点
         } else {
           if (item.staff) {
             this.upsert('shapeKey1', "circle", {
