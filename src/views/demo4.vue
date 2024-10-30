@@ -14,10 +14,30 @@
 
 <script>
 // @ is an alias to /src
-import { ExtensionCategory, Graph, Rect, register } from '@antv/g6';
-// import { Rect as RectGeometry, text } from '@antv/g';
+import { ExtensionCategory, Graph, Rect, BaseEdge, Line, register } from '@antv/g6';
+import { Rect as RectGeometry, text } from '@antv/g';
 // import { GNode, Group, Image, Rect, Text } from '@antv/g6-extension-react';
 import ghData from './mockData/dataGraph4'
+const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
+  return [
+    ['M', x - r, y - r],
+    ['a', r, r, 0, 1, 0, r * 2, 0],
+    ['a', r, r, 0, 1, 0, -r * 2, 0],
+    ['M', x + 2 - r, y - r],
+    ['L', x + r - 2, y - r],
+  ];
+};
+const EXPAND_ICON = function EXPAND_ICON(x, y, r) {
+  return [
+    ['M', x - r, y - r],
+    ['a', r, r, 0, 1, 0, r * 2, 0],
+    ['a', r, r, 0, 1, 0, -r * 2, 0],
+    ['M', x + 2 - r, y - r],
+    ['L', x + r - 2, y - r],
+    ['M', x, y - 2 * r + 2],
+    ['L', x, y - 2],
+  ];
+};
 const rectShapeWidth = 144;
 const rectShapeHeight = 54;
 const rootId = 'rootId';
@@ -34,9 +54,30 @@ export default {
   },
   methods: {
     searchFunc() { },
+    // 判断是否同时存在公司节点和员工节点
+    checkCompanyNodeAndStaffNodeExist(nodeId) {
+      const sourceEdges = ghData.edges.filter(el => el.source === nodeId);
+      if (sourceEdges.length > 1) {
+        const checkCompanyNodeExist = sourceEdges.some(item => {
+          let curNode = ghData.nodes.find(el => item.target === el.id);
+          const staff = curNode?.staff;
+          return !staff;
+        });
+        const checkStaffNodeExist = sourceEdges.some(item => {
+          let curNode = ghData.nodes.find(el => item.target === el.id);
+          const staff = curNode?.staff;
+          return staff;
+        });
+        // 存在公司和员工的子节点
+        if (checkCompanyNodeExist && checkStaffNodeExist) {
+          return true;
+        }
+      }
+      return false;
+    },
   },
   mounted() {
-    const _that = this;
+    const _this = this;
     class SelfNode1 extends Rect {
       onCreate() {
         const [width, height] = this.getSize();
@@ -74,11 +115,56 @@ export default {
           fontSize: 14,
           cursor: 'pointer'
         }, this);
-        console.log(11, this.attributes)
+
+        // this.upsert('shape-key4', "path", {
+        //   x: 0,
+        //   y: 0,
+        //   r: 6,
+        //   fill: '#fff',
+        //   stroke: '#4ea2f0',
+        //   cursor: 'pointer',
+        //   path: COLLAPSE_ICON(),
+        // }, this);
+        // console.log(11, this.attributes)
+      }
+    }
+
+    class PolylineEdge extends Line {
+      getKeyPath(attributes) {
+        const [sourcePoint, targetPoint] = this.getEndpoints(attributes);
+        // console.log(attributes, 111111)
+        const pointData = this.getEndpoints(attributes);
+        let startPointX = sourcePoint[0];
+        let endPointX = targetPoint[0];
+        const targetNodeModel = ghData.nodes.find(el => el.id === attributes.targetNode);
+        if (_this.checkCompanyNodeAndStaffNodeExist(attributes.sourceNode)) {
+          // 偏移量
+          const offset = 30
+          // 员工节点
+          if (targetNodeModel.staff) {
+            startPointX += rectShapeWidth / 2 - offset
+          } else {
+            startPointX -= rectShapeWidth / 2 - offset
+          }
+        }
+        // console.log(pointData, attributes.name)
+        return [
+          ['M', startPointX, sourcePoint[1]],
+          // ['L', targetPoint[0] / 2 + (1 / 2) * sourcePoint[0], sourcePoint[1]],
+          // ['L', targetPoint[0] / 2 + (1 / 2) * sourcePoint[0], targetPoint[1]],
+          ['L', endPointX, targetPoint[1]],
+        ];
+        // return [
+        //   ['M', sourcePoint[0], sourcePoint[1]],
+        //   // ['L', targetPoint[0] / 2 + (1 / 2) * sourcePoint[0], sourcePoint[1]],
+        //   // ['L', targetPoint[0] / 2 + (1 / 2) * sourcePoint[0], targetPoint[1]],
+        //   ['L', targetPoint[0], targetPoint[1]],
+        // ];
       }
     }
 
     register(ExtensionCategory.NODE, 'self-Node1', SelfNode1);
+    register(ExtensionCategory.EDGE, 'custom-polyline', PolylineEdge);
 
     this.graph = new Graph({
       autoFit: 'center',
@@ -105,19 +191,49 @@ export default {
       node: {
         type: 'self-Node1',
         style: {
-          size: 100,
+          size: [rectShapeWidth, rectShapeHeight],
+          // size: [60, 30],
           fillOpacity: 0,
           name: (d) => d.id,
           value: (d) => d.data.value,
+          // 默认将线的起点归拢在一起
+          ports: [{ placement: 'top' }, { placement: 'bottom' }],
+        },
+        // anchorPoints: [
+        //   [0.5, 0],
+        //   [0.5, 1]
+        // ],
+        palette: {
+          field: (d) => d.combo,
+        },
+      },
+      edge: {
+        type: 'custom-polyline',
+        style: {
+          // startArrow: true,
+          endArrow: true,
+          name: (d) => d.id,
+          // stroke: '#F6BD16',
+        },
+      },
+      // edge: {
+      //   type: 'cubic-vertical',
+      //   style: {
+      //     endArrow: true,
+      //   },
+      // },
+      combo: {
+        type: 'rect',
+        style: {
+          radius: 8,
+          labelText: (d) => d.id,
         },
       },
       layout: {
-        type: 'dagre',
-        rankdir: 'TB', // 可选，默认为图的中心
-        // align: 'DL', // 可选
-        nodesep: 50, // 可选
-        ranksep: 40, // 可选
-        // controlPoints: true, // 可选
+        type: 'antv-dagre',
+        ranksep: 50,
+        nodesep: 5,
+        sortByCombo: true,
       },
       behaviors: ['drag-element'],
     });
