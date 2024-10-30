@@ -43,6 +43,7 @@ const EXPAND_ICON = require('@/assets/images/expand.png');
 const rectShapeWidth = 144;
 const rectShapeHeight = 54;
 const rootId = 'rootId';
+let graph;
 export default {
   name: 'HomeView',
   components: {
@@ -59,9 +60,9 @@ export default {
       // 清空上一次搜索
       [...ghData.nodes, ...ghData.edges].forEach(el => {
         let id = el.id;
-        let curState = this.graph.getElementState(id);
+        let curState = graph.getElementState(id);
         if (curState.includes('myHighlight')) {
-          this.graph.setElementState({
+          graph.setElementState({
             [id]: curState.filter(el => el !== 'myHighlight')
           })
         }
@@ -89,7 +90,7 @@ export default {
         // 高亮节点
         nodeIds.forEach(el => {
           let id = el;
-          let curState = this.graph.getElementState(id) || [];
+          let curState = graph.getElementState(id) || [];
           curState.push('myHighlight');
           stateObj[id] = curState;
         })
@@ -98,13 +99,13 @@ export default {
         edgesIds = [...new Set(edgesIds)];
         edgesIds.forEach(el => {
           let id = el;
-          let curState = this.graph.getElementState(id) || [];
+          let curState = graph.getElementState(id) || [];
           curState.push('myHighlight');
           stateObj[id] = curState;
         })
 
-        this.graph.setElementState(stateObj);
-        this.graph.render();
+        graph.setElementState(stateObj);
+        graph.render();
       }
     },
     // 判断有子节点
@@ -140,8 +141,8 @@ export default {
       onCreate() {
         const [width, height] = this.getSize();
         const item = ghData.nodes.find(el => el.id === this.attributes.name);
-        // if(_this.graph.getElementState){
-        //   let curState = _this.graph.getElementState(this.attributes.name);
+        // if(graph.getElementState){
+        //   let curState = graph.getElementState(this.attributes.name);
         //   if(curState.includes('highlight')){
         //     console.log(this.attributes.name,curState)
         //   }
@@ -222,8 +223,8 @@ export default {
       }
       onUpdate() {
         // const item = ghData.nodes.find(el => el.id === this.attributes.name);
-        const item = _this.graph.getNodeData(this.attributes.name);
-        let curState = _this.graph.getElementState(this.attributes.name);
+        const item = graph.getNodeData(this.attributes.name);
+        let curState = graph.getElementState(this.attributes.name);
         // 高亮自定义节点
         if (curState.includes('myHighlight')) {
           // console.log(this.attributes.name, curState);
@@ -287,7 +288,7 @@ export default {
     register(ExtensionCategory.NODE, 'self-Node1', SelfNode1);
     register(ExtensionCategory.EDGE, 'custom-polyline', PolylineEdge);
 
-    this.graph = new Graph({
+    graph = new Graph({
       autoFit: 'center',
       container: 'mountNode4',
       data: ghData,
@@ -372,9 +373,9 @@ export default {
       behaviors: ['drag-element'],
     });
 
-    this.graph.render();
+    graph.render();
 
-    this.graph.on(NodeEvent.CLICK, (event) => {
+    graph.on(NodeEvent.CLICK, (event) => {
       const { target, originalTarget } = event;
       console.log(11, target.id)
       console.log(11, event)
@@ -382,9 +383,9 @@ export default {
 
   },
   beforeDestroy() {
-    // if (this.graph) {
-    //   this.graph.clear();
-    //   this.graph.destroy()
+    // if (graph) {
+    //   graph.clear();
+    //   graph.destroy()
     //   console.log("销毁画布。1")
     // }
   }
