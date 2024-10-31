@@ -26,6 +26,7 @@ const data = {
             category:'staff',
         },
         {
+            {
             id: 'rootStaffId3',
             name: '马玉国',
             stockProportion: 30,
