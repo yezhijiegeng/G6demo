@@ -9,11 +9,11 @@ const routes = [
     name: 'demoCon',
     component: () => import(/* webpackChunkName: "about" */ '../views/demoCon.vue')
   },
-  {
-    path: '/demo2',
-    name: 'demo2',
-    component: () => import(/* webpackChunkName: "about" */ '../views/demo2.vue')
-  },
+  // {
+  //   path: '/demo2',
+  //   name: 'demo2',
+  //   component: () => import(/* webpackChunkName: "about" */ '../views/demo2.vue')
+  // },
   // {
   //   path: '/demo1',
   //   name: 'demo1',

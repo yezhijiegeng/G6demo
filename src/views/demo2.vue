@@ -16,7 +16,7 @@
 
 <script>
 // @ is an alias to /src
-import G6 from 'g6V4';
+import G6 from '@antv/g6';
 // import data from './data'
 import ghData from './mockData/dataGraph2'
 

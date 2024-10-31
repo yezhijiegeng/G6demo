@@ -11,10 +11,8 @@
 </template>
 
 <script>
-// @ is an alias to /src
 import HelloWorld from '@/components/HelloWorld.vue'
-import G6 from 'g6V4';
-// import data from './data'
+import G6 from '@antv/g6';
 import ghData from './mockData/dataGraph1'
 
 const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
