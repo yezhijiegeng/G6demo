@@ -768,7 +768,7 @@ export default {
 
             // 移除combs
             const leftAllNodes = curGrahData.nodes.filter(el => !allChildNodesIds.includes(el.id));
-            const leftCombIds = leftAllNodes.filter(el => el.combo);
+            const leftCombIds = leftAllNodes.filter(el => el.combo).map(el => el.combo);
             const allCombsData = graph.getComboData();
             const allCombsDataIds = allCombsData.map(el => el.id);
             const diffCombsIds = allCombsDataIds.filter(ele => !leftCombIds.includes(ele))
@@ -856,7 +856,7 @@ export default {
 
             // 移除combs
             const leftAllNodes = curGrahData.nodes.filter(el => !allChildNodesIds.includes(el.id));
-            const leftCombIds = leftAllNodes.filter(el => el.combo);
+            const leftCombIds = leftAllNodes.filter(el => el.combo).map(el => el.combo);
             const allCombsData = graph.getComboData();
             const allCombsDataIds = allCombsData.map(el => el.id);
             const diffCombsIds = allCombsDataIds.filter(ele => !leftCombIds.includes(ele))
@@ -930,7 +930,7 @@ export default {
 
             // 移除combs
             const leftAllNodes = curGrahData.nodes.filter(el => !allChildNodesIds.includes(el.id));
-            const leftCombIds = leftAllNodes.filter(el => el.combo);
+            const leftCombIds = leftAllNodes.filter(el => el.combo).map(el => el.combo);
             const allCombsData = graph.getComboData();
             const allCombsDataIds = allCombsData.map(el => el.id);
             const diffCombsIds = allCombsDataIds.filter(ele => !leftCombIds.includes(ele))
