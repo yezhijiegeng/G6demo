@@ -5,51 +5,59 @@
       <el-aside style="border-right: 1px solid #ccc; width: 200px;">
         <el-menu :default-active="activeName" @select="handleSelect" class="el-menu-vertical-demo" @open="handleOpen"
           @close="handleClose">
-          <el-menu-item index="1">
+          <el-menu-item :index="item.id" v-for="(item, index) in demoList" :key="index">
             <i class="el-icon-document"></i>
-            <span slot="title">demo1</span>
-          </el-menu-item>
-          <el-menu-item index="2">
-            <i class="el-icon-document"></i>
-            <span slot="title">demo2</span>
-          </el-menu-item>
-          <el-menu-item index="3">
-            <i class="el-icon-document"></i>
-            <span slot="title">demo3</span>
-          </el-menu-item>
-          <el-menu-item index="4">
-            <i class="el-icon-document"></i>
-            <span slot="title">demo4</span>
+            <span slot="title">{{ item.title }}</span>
           </el-menu-item>
         </el-menu>
       </el-aside>
       <el-main>
-        <demo1 class="h-full w-full" v-if="activeName === '1'" />
-        <demo2 class="h-full w-full" v-if="activeName === '2'" />
-        <demo3 class="h-full w-full" v-if="activeName === '3'" />
-        <demo4 class="h-full w-full" v-if="activeName === '4'" />
+        <component :is="curComponents"></component>
       </el-main>
     </el-container>
   </el-container>
 </template>
 
 <script>
-import demo1 from './demo1.vue'
-import demo2 from './demo2.vue'
-import demo3 from './demo3.vue'
-import demo4 from './demo4.vue'
 export default {
   name: 'HomeView',
-  components: {
-    demo1,
-    demo2,
-    demo3,
-    demo4,
-  },
+  components: {},
   data() {
     return {
       activeName: '4',
+      demoList: [
+        {
+          id: '1',
+          title: 'demo1',
+          component: () => import('./demo1.vue')
+        },
+        {
+          id: '2',
+          title: 'demo2',
+          component: () => import('./demo2.vue')
+        },
+        {
+          id: '3',
+          title: 'demo3',
+          component: () => import('./demo3.vue')
+        },
+        {
+          id: '4',
+          title: 'demo4',
+          component: () => import('./demo4.vue')
+        },
+        {
+          id: '5',
+          title: 'demo5',
+          component: () => import('./demo5.vue')
+        },
+      ],
     }
+  },
+  computed: {
+    curComponents() {
+      return this.demoList.find(el => el.id === this.activeName).component;
+    },
   },
   methods: {
     handleSelect(val) {
