@@ -114,7 +114,8 @@ export default {
     },
     async searchFunc() {
       const targetNode = this.searchVal;
-      const { nodes, edges } = _.cloneDeep(ghData);
+      // const { nodes, edges, combos } = _.cloneDeep(ghData);
+      const originGhDataCopy = _.cloneDeep(ghData);
       // 获取当前所有数据
       const curGrahData = graph.getData();
       if (!targetNode) {
@@ -133,7 +134,7 @@ export default {
         // 找到这个节点的所有祖先节点，，以及吗以及每一个祖先节点的第一层子节点
         // 构建邻接表
         const graphObj = {};
-        edges.forEach(edge => {
+        originGhDataCopy.edges.forEach(edge => {
           if (!graphObj[edge.source]) {
             graphObj[edge.source] = [];
           }
@@ -144,7 +145,7 @@ export default {
         function findAncestors(node) {
           const ancestors = [];
           const find = (currentNode) => {
-            for (const edge of edges) {
+            for (const edge of originGhDataCopy.edges) {
               if (edge.target === currentNode) {
                 ancestors.push(edge.source);
                 find(edge.source); // 递归查找祖先
@@ -175,7 +176,7 @@ export default {
             allNodesIds = allNodesIds.concat(val)
           }
           allNodesIds = [...new Set(allNodesIds)]
-          let allNodes = nodes.filter(el => {
+          let allNodes = originGhDataCopy.nodes.filter(el => {
             return allNodesIds.includes(el.id)
           });
           allNodes.forEach(el => {
@@ -198,7 +199,7 @@ export default {
           let allEdges = [];
           for (let [key, val] of Object.entries(childrenMap)) {
             val.forEach(item => {
-              let curFind = edges.find(el => el.source === key && el.target === item);
+              let curFind = originGhDataCopy.edges.find(el => el.source === key && el.target === item);
               if (ancestors.includes(item)) {
                 curFind.states = ['myHighlight'];
               } else {
@@ -235,18 +236,27 @@ export default {
         }
 
         const allResObj = getAncestorsAndChildren(targetNode);
-        graph.destroy();
+        const curCombos = this.findCombos(allResObj.allNodes)
 
         const curData = {
           nodes: allResObj.allNodes,
           edges: allResObj.allEdges,
+          combos: curCombos
         }
+
         console.log("searchData", curData)
+        graph.destroy();
         await this.initGraph(curData);
         // 设置叶子节点折叠状态
         // 需await等待graph render完成才能进行
         this.setLeafColAndExpandState()
       }
+    },
+    findCombos(nodes) {
+      let combsIds = nodes.filter(el => el.combo).map(el => el.combo)
+      combsIds = [...new Set(combsIds)];
+      const curCombos = ghData.combos.filter(el => combsIds.includes(el.id));
+      return curCombos
     },
     // 判断有子节点
     checkChildNodesExist(nodeId, edges = ghData.edges) {
@@ -333,33 +343,52 @@ export default {
       })
       graph.setElementState(statesObj);
     },
-
-    // 默认渲染层级，根节点为第一层
-    getDataByLevel(defaultRenderLevel = 2) {
-      const gData = _.cloneDeep(ghData);
-      let { nodes, edges, combos } = gData;
+    findRootId() {
       // 查找根节点 作为source 且没有 作为target
-      let rootArr = edges.map(el => el.source);
+      let rootArr = ghData.edges.map(el => el.source);
       // 去重
       rootArr = [...new Set(rootArr)];
-      rootArr = rootArr.filter(item => edges.every(el => item !== el.target))
-      // console.log(11,rootArr)
-      // 查找边
+      rootArr = rootArr.filter(item => ghData.edges.every(el => item !== el.target));
+      // 默认第一个
+      const rootId = rootArr[0];
+      return rootId;
+    },
+    // 默认渲染深度，根节点为0
+    findNodesAtDepth(depth = 0) {
+      const gDataCopy = _.cloneDeep(ghData);
+      let rootId = this.findRootId();
+      let findNodes = [];
       let findEdges = [];
-      let sourceAndTargetAll = [];
-      rootArr.forEach(item => {
-        let targetArr = edges.filter(el => item === el.source).map(el => {
-          findEdges.push(el);
-          sourceAndTargetAll.push(el.source);
-          sourceAndTargetAll.push(el.target);
-          return el.target;
-        })
-      })
+      if (depth > 0) {
+        const result = {
+          nodes: new Set(),
+          edges: new Set(),
+        };
+        // 辅助函数，递归查找
+        function search(currentNode, currentDepth) {
+          if (currentDepth === depth) {
+            return;
+          }
+          for (const edge of gDataCopy.edges) {
+            if (edge.source === currentNode) {
+              result.edges.add(edge);
+              result.nodes.add(edge.target);
+              search(edge.target, currentDepth + 1);
+            }
+          }
+        }
+        // 从根节点开始查找
+        search(rootId, defaultRenderLevel);
 
-      // 查找节点
-      sourceAndTargetAll = [...new Set(sourceAndTargetAll)];
+        const findNodesIds = Array.from(result.nodes);
 
-      let findNodes = nodes.filter(item => sourceAndTargetAll.includes(item.id));
+        findNodes = gDataCopy.nodes.filter(el => findNodesIds.includes(el.id));
+        findEdges = Array.from(result.edges);
+      } else {
+        findNodes = gDataCopy.nodes.filter(el => el.id === rootId);
+      }
+
+      console.log(11, findNodes)
 
       // 初始化节点展开状态
       // 同时存在公司节点和员工节点
@@ -370,24 +399,26 @@ export default {
       // collapse3折叠公司节点，expand3展开员工节点
       findNodes.forEach(item => {
         if (this.checkCompanyNodeAndStaffNodeExist(item.id)) {
-          if (rootArr.includes(item.id)) {
-            item.states = ['expand1', 'expand2']
+          if (item.id === rootId) {
+            item.states = ['collapse1', 'collapse2']
           } else {
             item.states = ['collapse1', 'collapse2']
           }
         } else {
-          if (rootArr.includes(item.id)) {
-            item.states = ['expand3']
+          if (item.id === rootId) {
+            item.states = ['collapse3']
           } else {
             item.states = ['collapse3']
           }
         }
       })
 
+      const curCombos = this.findCombos(findNodes)
+
       return {
         nodes: findNodes,
         edges: findEdges,
-        // combos,
+        combos: curCombos,
       }
       // console.log(22,findNodes,findEdges)
     },
@@ -656,7 +687,7 @@ export default {
         // console.log("curState1", graph.getElementState(curNodeId))
         // console.log("curNodeId", curNodeId)
 
-        const { edges, nodes } = _.cloneDeep(ghData);
+        const { edges, nodes, combos } = _.cloneDeep(ghData);
         // 左 公司
         if (curShapeKey === "shapeKey4") {
           // 当前是折叠 需要展开
@@ -688,32 +719,46 @@ export default {
             // console.log("curState2", graph.getElementState(curNodeId))
             // graph.setData(curGData);
             console.log("curAddGData", curAddGData)
+
+            // 新增combs
+            let combsIds = curAddNodes.filter(el => el.combo).map(el => el.combo);
+            if (combsIds.length > 0) {
+              let allCombsDataIds = graph.getComboData().map(el => el.id);
+              combsIds = combsIds.filter(el => !allCombsDataIds.includes(el));
+              const addCombs = combos.filter(el => combsIds.includes(el.id))
+              console.log("addCombs", addCombs)
+              if (addCombs.length > 0) {
+                graph.addComboData(addCombs);
+              }
+            }
+
             graph.addData(curAddGData);
 
             // 设置叶子节点折叠状态
             this.setLeafColAndExpandState()
 
             graph.render();
+
             // 当前是展开 需要折叠
           } else {
             // 获取当前所有数据
-            const { nodes, edges } = graph.getData();
+            const curGrahData = graph.getData();
             // const sourceEdgesIds = edges.filter(el => el.source === curNodeId);
             // 找到该节点下的的下一层公司节点，再找出这些公司节点下的所有节点，将这些节点都移除
-            let nextLevelNodes = edges.filter(el => el.source === curNodeId).map(el => el.target);
+            let nextLevelNodes = curGrahData.edges.filter(el => el.source === curNodeId).map(el => el.target);
             nextLevelNodes = nextLevelNodes.filter(el => {
-              let item = nodes.find(ele => ele.id === el);
+              let item = curGrahData.nodes.find(ele => ele.id === el);
               return !item?.staff;
             })
-            let allChildNodes = [];
+            let allChildNodesIds = [];
             nextLevelNodes.forEach(el => {
-              let curChildNodes = this.findChildrenByEdges(el, edges);
-              allChildNodes = allChildNodes.concat(curChildNodes);
+              let curChildNodes = this.findChildrenByEdges(el, curGrahData.edges);
+              allChildNodesIds = allChildNodesIds.concat(curChildNodes);
             })
 
 
-            allChildNodes = allChildNodes.concat(nextLevelNodes);
-            allChildNodes = [...new Set(allChildNodes)]
+            allChildNodesIds = allChildNodesIds.concat(nextLevelNodes);
+            allChildNodesIds = [...new Set(allChildNodesIds)]
 
             curState = curState.filter(el => el !== 'expand1');
             curState.push('collapse1')
@@ -721,13 +766,21 @@ export default {
               [curNodeId]: curState
             });
 
-            graph.removeNodeData(allChildNodes);
+            // 移除combs
+            const leftAllNodes = curGrahData.nodes.filter(el => !allChildNodesIds.includes(el.id));
+            const leftCombIds = leftAllNodes.filter(el => el.combo).map(el => el.combo);
+            const allCombsData = graph.getComboData();
+            const allCombsDataIds = allCombsData.map(el => el.id);
+            const diffCombsIds = allCombsDataIds.filter(ele => !leftCombIds.includes(ele))
+            if (diffCombsIds.length > 0) {
+              graph.removeComboData(diffCombsIds);
+            }
+
+            graph.removeNodeData(allChildNodesIds);
 
             // 设置叶子节点折叠状态
             this.setLeafColAndExpandState()
-
             graph.render();
-
           }
           // 右 员工
         } else if (curShapeKey === "shapeKey5") {
@@ -757,30 +810,43 @@ export default {
               [curNodeId]: curState
             });
             console.log("curAddGData", curAddGData)
+
+            // 新增combs
+            let combsIds = curAddNodes.filter(el => el.combo).map(el => el.combo);
+            if (combsIds.length > 0) {
+              let allCombsDataIds = graph.getComboData().map(el => el.id);
+              combsIds = combsIds.filter(el => !allCombsDataIds.includes(el));
+              const addCombs = combos.filter(el => combsIds.includes(el.id))
+              console.log("addCombs", addCombs)
+              if (addCombs.length > 0) {
+                graph.addComboData(addCombs);
+              }
+            }
+
             graph.addData(curAddGData);
 
             // 设置叶子节点折叠状态
             this.setLeafColAndExpandState()
-
             graph.render();
           } else {
             // 获取当前所有数据
-            const { nodes, edges } = graph.getData();
+            // const { nodes, edges } = graph.getData();
+            const curGrahData = graph.getData();
             // const sourceEdgesIds = edges.filter(el => el.source === curNodeId);
             // 找到该节点下的的下一层员工节点，再找出这些员工节点下的所有节点，将这些节点都移除
-            let nextLevelNodes = edges.filter(el => el.source === curNodeId).map(el => el.target);
+            let nextLevelNodes = curGrahData.edges.filter(el => el.source === curNodeId).map(el => el.target);
             nextLevelNodes = nextLevelNodes.filter(el => {
-              let item = nodes.find(ele => ele.id === el);
+              let item = curGrahData.nodes.find(ele => ele.id === el);
               return item?.staff;
             })
-            let allChildNodes = [];
+            let allChildNodesIds = [];
             nextLevelNodes.forEach(el => {
-              let curChildNodes = this.findChildrenByEdges(el, edges);
-              allChildNodes = allChildNodes.concat(curChildNodes);
+              let curChildNodes = this.findChildrenByEdges(el, curGrahData.edges);
+              allChildNodesIds = allChildNodesIds.concat(curChildNodes);
             })
 
-            allChildNodes = allChildNodes.concat(nextLevelNodes);
-            allChildNodes = [...new Set(allChildNodes)]
+            allChildNodesIds = allChildNodesIds.concat(nextLevelNodes);
+            allChildNodesIds = [...new Set(allChildNodesIds)]
 
             curState = curState.filter(el => el !== 'expand2');
             curState.push('collapse2')
@@ -788,7 +854,17 @@ export default {
               [curNodeId]: curState
             });
 
-            graph.removeNodeData(allChildNodes);
+            // 移除combs
+            const leftAllNodes = curGrahData.nodes.filter(el => !allChildNodesIds.includes(el.id));
+            const leftCombIds = leftAllNodes.filter(el => el.combo).map(el => el.combo);
+            const allCombsData = graph.getComboData();
+            const allCombsDataIds = allCombsData.map(el => el.id);
+            const diffCombsIds = allCombsDataIds.filter(ele => !leftCombIds.includes(ele))
+            if (diffCombsIds.length > 0) {
+              graph.removeComboData(diffCombsIds);
+            }
+
+            graph.removeNodeData(allChildNodesIds);
             graph.render();
           }
           // 中 全部
@@ -819,19 +895,32 @@ export default {
               [curNodeId]: curState
             });
             console.log("curAddGData", curAddGData)
+
+            // 新增combs
+            let combsIds = curAddNodes.filter(el => el.combo).map(el => el.combo);
+            if (combsIds.length > 0) {
+              let allCombsDataIds = graph.getComboData().map(el => el.id);
+              combsIds = combsIds.filter(el => !allCombsDataIds.includes(el));
+              const addCombs = combos.filter(el => combsIds.includes(el.id))
+              console.log("addCombs", addCombs)
+              if (addCombs.length > 0) {
+                graph.addComboData(addCombs);
+              }
+            }
+
             graph.addData(curAddGData);
 
             // 设置叶子节点折叠状态
             this.setLeafColAndExpandState()
-
             graph.render();
+
           } else {
             // 获取当前所有数据
-            const { nodes, edges } = graph.getData();
+            const curGrahData = graph.getData();
             // const sourceEdgesIds = edges.filter(el => el.source === curNodeId);
             // 找到该节点下的所有公司节点并移除
-            let allChildNodes = this.findChildrenByEdges(curNodeId, edges);
-            allChildNodes = [...new Set(allChildNodes)]
+            let allChildNodesIds = this.findChildrenByEdges(curNodeId, curGrahData.edges);
+            allChildNodesIds = [...new Set(allChildNodesIds)]
 
             curState = curState.filter(el => el !== 'expand3');
             curState.push('collapse3')
@@ -839,7 +928,17 @@ export default {
               [curNodeId]: curState
             });
 
-            graph.removeNodeData(allChildNodes);
+            // 移除combs
+            const leftAllNodes = curGrahData.nodes.filter(el => !allChildNodesIds.includes(el.id));
+            const leftCombIds = leftAllNodes.filter(el => el.combo).map(el => el.combo);
+            const allCombsData = graph.getComboData();
+            const allCombsDataIds = allCombsData.map(el => el.id);
+            const diffCombsIds = allCombsDataIds.filter(ele => !leftCombIds.includes(ele))
+            if (diffCombsIds.length > 0) {
+              graph.removeComboData(diffCombsIds);
+            }
+
+            graph.removeNodeData(allChildNodesIds);
             graph.render();
           }
         }
@@ -849,7 +948,7 @@ export default {
     }
   },
   mounted() {
-    let curData = this.getDataByLevel();
+    const curData = this.findNodesAtDepth();
     this.initGraph(curData);
   },
   beforeDestroy() {
