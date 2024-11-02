@@ -7,6 +7,7 @@
         </el-option>
       </el-select>
       <el-button type="primary" size="mini" @click="searchFunc">搜索</el-button>
+      <el-button class="mr-2" type="info" size="mini" @click="expandClick">全展开</el-button>
     </div>
     <div class="w-full h-full" id="mountNode4"></div>
   </div>
@@ -113,7 +114,7 @@ export default {
     },
     async searchFunc() {
       const targetNode = this.searchVal;
-      const { nodes, edges } = ghData;
+      const { nodes, edges } = _.cloneDeep(ghData);
       // 获取当前所有数据
       const curGrahData = graph.getData();
       if (!targetNode) {
@@ -389,6 +390,10 @@ export default {
         // combos,
       }
       // console.log(22,findNodes,findEdges)
+    },
+    expandClick() {
+      graph.destroy();
+      this.initGraph(_.cloneDeep(ghData));
     },
     async initGraph(curOriginDta) {
       const _this = this;
