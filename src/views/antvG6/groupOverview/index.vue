@@ -14,12 +14,17 @@
 
 <script>
 // @ is an alias to /src
-import { ExtensionCategory, Graph, Rect, BaseEdge, Line, register, NodeEvent } from '@antv/g6';
-import { Rect as RectGeometry, text } from '@antv/g';
+import { ExtensionCategory, Graph, Rect, BaseEdge, Line, register, NodeEvent } from '@/assets/js/g6V5.min.js';
+// import { Rect as RectGeometry, text } from '@antv/g';
 // import { GNode, Group, Image, Rect, Text } from '@antv/g6-extension-react';
 import ghData from '../../mockData/dataGraph4_1'
-const COLLAPSE_ICON = require('@/assets/images/collapse.png');
+// const COLLAPSE_ICON = require('@/assets/images/collapse.png');
 const EXPAND_ICON = require('@/assets/images/expand.png');
+const COLLAPSE_ICON = require('@/assets/images/icon/company.png');
+const COLLAPSE_COMPANY_ICON = require('@/assets/images/icon/company.png');
+const EXPAND_COMPANY_ICON = require('@/assets/images/icon/company1.png');
+const COLLAPSE_STAFF_ICON = require('@/assets/images/icon/staff.png');
+const EXPAND_STAFF_ICON = require('@/assets/images/icon/staff1.png');
 // const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
 //   return [
 //     ['M', x - r, y - r],
@@ -194,7 +199,7 @@ export default {
               height: iconSize,
               x: -rectShapeWidth / 2 + offset - iconSize / 2,
               y: -y - 6,
-              src: COLLAPSE_ICON,
+              src: COLLAPSE_STAFF_ICON,
               cursor: 'pointer'
             }, this);
             this.upsert('shapeKey5', "image", {
@@ -203,7 +208,7 @@ export default {
               height: iconSize,
               x: rectShapeWidth / 2 - offset - iconSize / 2,
               y: -y - 6,
-              src: COLLAPSE_ICON,
+              src: COLLAPSE_COMPANY_ICON,
               cursor: 'pointer'
             }, this);
           } else {
@@ -263,7 +268,7 @@ export default {
           // 偏移量
           const offset = 30
           // 员工节点
-          if (targetNodeModel.staff) {
+          if (targetNodeModel?.staff) {
             startPointX += rectShapeWidth / 2 - offset
           } else {
             startPointX -= rectShapeWidth / 2 - offset

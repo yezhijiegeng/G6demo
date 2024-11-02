@@ -10,17 +10,17 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/demoCon.vue"),
   },
-  {
-    path: "/demo2",
-    name: "demo2",
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/demo2.vue"),
-  },
-  {
-    path: "/demo3",
-    name: "demo3",
-    component: () => import("../views/demo3_1.vue"),
-  },
+  // {
+  //   path: "/demo2",
+  //   name: "demo2",
+  //   component: () =>
+  //     import(/* webpackChunkName: "about" */ "../views/demo2.vue"),
+  // },
+  // {
+  //   path: "/demo3",
+  //   name: "demo3",
+  //   component: () => import("../views/demo3_1.vue"),
+  // },
   {
     path: "/antvG6",
     name: "antvG6",

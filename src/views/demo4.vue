@@ -14,8 +14,9 @@
 
 <script>
 // @ is an alias to /src
-import { ExtensionCategory, Graph, Rect, BaseEdge, Line, register, NodeEvent } from '@antv/g6';
-import { Rect as RectGeometry, text } from '@antv/g';
+// import { ExtensionCategory, Graph, Rect, BaseEdge, Line, register, NodeEvent } from '@antv/g6';
+import { ExtensionCategory, Graph, Rect, BaseEdge, Line, register, NodeEvent } from '@/assets/js/g6V5.min.js';
+// import { Rect as RectGeometry, text } from '@antv/g';
 // import { GNode, Group, Image, Rect, Text } from '@antv/g6-extension-react';
 import ghData from './mockData/dataGraph4'
 const COLLAPSE_ICON = require('@/assets/images/collapse.png');
