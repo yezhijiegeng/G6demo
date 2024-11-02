@@ -104,20 +104,20 @@ const data = {
             target: 'subTree1-2-2',
         },
     ],
-    combos: [
-        {
-            "id": "A",
-            "style": {
-                "type": "rect"
-            }
-        },
-        {
-            "id": "B",
-            "style": {
-                "type": "rect"
-            }
-        },
-    ]
+    // combos: [
+    //     {
+    //         "id": "A",
+    //         "style": {
+    //             "type": "rect"
+    //         }
+    //     },
+    //     {
+    //         "id": "B",
+    //         "style": {
+    //             "type": "rect"
+    //         }
+    //     },
+    // ]
 }
 
 export default data
