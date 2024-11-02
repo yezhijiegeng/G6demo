@@ -842,7 +842,6 @@ export default {
             graph.removeNodeData(allChildNodes);
             graph.render();
           }
-
         }
         console.log(11, target.id)
         console.log(11, event)
