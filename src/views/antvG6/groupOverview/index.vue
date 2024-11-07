@@ -25,8 +25,8 @@
         v-model="isCollapse"
         style="margin-bottom: 20px"
         @input="inputChange"
-         size="mini"
-         class="mt-5 ml-1"
+        size="mini"
+        class="mt-5 ml-1"
       >
         <el-radio-button :label="false">全展开</el-radio-button>
         <el-radio-button :label="true">收起</el-radio-button>
@@ -45,6 +45,7 @@ import {
   Line,
   register,
   NodeEvent,
+  HTML,
 } from "@/assets/js/g6V5.min";
 // import { Rect as RectGeometry, text } from '@antv/g';
 // import { GNode, Group, Image, Rect, Text } from '@antv/g6-extension-react';
@@ -53,10 +54,10 @@ import _ from "lodash";
 const COLLAPSE_ICON = require("@/assets/images/collapse.png");
 const EXPAND_ICON = require("@/assets/images/expand.png");
 // const COLLAPSE_ICON = require('@/assets/images/icon/company.png');
-const COLLAPSE_COMPANY_ICON = require('@/assets/images/icon/company.png');
-const EXPAND_COMPANY_ICON = require('@/assets/images/icon/company1.png');
-const COLLAPSE_STAFF_ICON = require('@/assets/images/icon/staff.png');
-const EXPAND_STAFF_ICON = require('@/assets/images/icon/staff1.png');
+const COLLAPSE_COMPANY_ICON = require("@/assets/images/icon/company.png");
+const EXPAND_COMPANY_ICON = require("@/assets/images/icon/company1.png");
+const COLLAPSE_STAFF_ICON = require("@/assets/images/icon/staff.png");
+const EXPAND_STAFF_ICON = require("@/assets/images/icon/staff1.png");
 // const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
 //   return [
 //     ['M', x - r, y - r],
@@ -507,21 +508,60 @@ export default {
               this
             );
           } else {
-            this.upsert(
-              "shapeKey2",
-              "rect",
-              {
-                x,
-                y,
-                width: rectShapeWidth,
-                height: rectShapeHeight,
-                fill: isRoot ? "#4ea2f0" : "#fff",
-                stroke: "#4ea2f0",
-                radius: 2,
-                cursor: "pointer",
-              },
-              this
-            );
+            if (item.category === "rootCompany") {
+              const color = "#999";
+              const customHtml = `<div
+							style="
+								width:100%;
+								height: 100%;
+								background: #fff;
+								border: 1px solid #e28334;
+								color: #999;
+								user-select: none;
+								display: flex;
+								padding: 10px;
+								"
+						>
+							<div style="display: flex;flex-direction: column;flex: 1;">
+								<div style="font-weight: bold;">
+									${item.name} 
+								</div>
+								<div>
+								</div>
+							</div>
+						</div>`;
+
+              this.upsert(
+                "custom-NodeHtml1",
+                "html",
+                {
+                  // size: [240, 80],
+                  // size: [240, 80],
+                  dx: -40,
+                  dy: -40,
+                  x: -20,
+                  y: 0,
+                  innerHTML: customHtml,
+                },
+                this
+              );
+            } else {
+              this.upsert(
+                "shapeKey2",
+                "rect",
+                {
+                  x,
+                  y,
+                  width: rectShapeWidth,
+                  height: rectShapeHeight,
+                  fill: isRoot ? "#4ea2f0" : "#fff",
+                  stroke: "#4ea2f0",
+                  radius: 2,
+                  cursor: "pointer",
+                },
+                this
+              );
+            }
           }
           this.upsert(
             "shapeKey3",
@@ -733,8 +773,26 @@ export default {
         }
       }
 
+      class SelfHtmlNode1 extends HTML {
+        getKeyStyle(attributes) {
+          return { ...super.getKeyStyle(attributes), r: attributes.radius };
+        }
+
+        // 重写方法
+        drawKeyShape(attributes, container) {
+          // 自定义绘制逻辑，创建一个 G.Circle
+          return this.upsert(
+            "key",
+            HTML,
+            this.getKeyStyle(attributes),
+            container
+          );
+        }
+      }
+
       register(ExtensionCategory.NODE, "self-Node1", SelfNode1);
       register(ExtensionCategory.EDGE, "custom-polyline", PolylineEdge);
+      register(ExtensionCategory.EDGE, "custom-NodeHtml1", SelfHtmlNode1);
 
       graph = new Graph({
         autoFit: "center",

@@ -12,6 +12,7 @@ const data = {
             id: 'subTree1',
             name: '分公司1',
             stockProportion: 30,
+            category:'rootCompany'
         },
         {
             id: 'subTree1-1',
