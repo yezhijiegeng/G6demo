@@ -32,6 +32,18 @@ const routes = [
         component: () => import("../views/antvG6/groupView/index.vue"),
       },
       {
+        path: "g6V5",
+        name: "g6V5",
+        component: () => import("../views/antvG6/g6V5/index.vue"),
+        children: [
+          {
+            path: "base",
+            name: "g6V5Base",
+            component: () => import("../views/antvG6/g6V5/base/index.vue"),
+          },
+        ],
+      },
+      {
         path: "test",
         name: "test",
         component: () => import("../views/antvG6/test/index.vue"),
@@ -39,14 +51,12 @@ const routes = [
       {
         path: "groupOverview",
         name: "groupOverview",
-        component: () =>
-          import("../views/antvG6/groupOverview/index.vue"),
+        component: () => import("../views/antvG6/groupOverview/index.vue"),
       },
       {
         path: "comboRelatedLayout",
         name: "comboRelatedLayout",
-        component: () =>
-          import("../views/antvG6/comboRelatedLayout/index.vue"),
+        component: () => import("../views/antvG6/comboRelatedLayout/index.vue"),
       },
       {
         path: "combo",
@@ -68,7 +78,8 @@ const routes = [
           {
             path: "comboRelatedLayout",
             name: "comboRelatedLayout",
-            component: () => import("../views/antvG6/comboRelatedLayout/index.vue"),
+            component: () =>
+              import("../views/antvG6/comboRelatedLayout/index.vue"),
           },
         ],
       },
