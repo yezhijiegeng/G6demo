@@ -513,16 +513,6 @@ export default {
           const x = -rectShapeWidth / 2;
           const y = -rectShapeHeight / 2;
 
-          let expandIcon = EXPAND_COMPANY_ICON;
-          let collapsedIcon = COLLAPSE_COMPANY_ICON;
-          if (item.staff) {
-            expandIcon = EXPAND_STAFF_ICON;
-            collapsedIcon = COLLAPSE_STAFF_ICON;
-          } else {
-            expandIcon = EXPAND_COMPANY_ICON;
-            collapsedIcon = COLLAPSE_COMPANY_ICON;
-          }
-
           if (item?.staff) {
             this.upsert(
               "shapeKey1",
@@ -637,8 +627,8 @@ export default {
                   x: -rectShapeWidth / 2 + offset - iconSize / 2,
                   y: -y - 6,
                   src: curState.includes("collapse1")
-                    ? collapsedIcon
-                    : expandIcon,
+                    ? COLLAPSE_COMPANY_ICON
+                    : EXPAND_COMPANY_ICON,
                   cursor: "pointer",
                 },
                 this
@@ -654,15 +644,15 @@ export default {
                   x: rectShapeWidth / 2 - offset - iconSize / 2,
                   y: -y - 6,
                   src: curState.includes("collapse2")
-                    ? collapsedIcon
-                    : expandIcon,
+                    ? COLLAPSE_STAFF_ICON
+                    : EXPAND_STAFF_ICON,
                   cursor: "pointer",
                 },
                 this
               );
               // 中
             } else {
-              if (curNodeId === "subTree2-1") {
+              if (curNodeId === "rootId") {
                 debugger;
               }
               const nodeType = _this.getNodeType(curNodeId);
