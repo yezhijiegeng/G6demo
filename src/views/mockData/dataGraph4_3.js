@@ -10,9 +10,10 @@ const data = {
         },
         {
             id: 'subTree1',
-            name: '分公司1',
+            name: '邓冠华',
+            staff:true,
             stockProportion: 30,
-            category:'rootCompany'
+            // category:'rootCompany'
         },
         {
             id: 'subTree1-1',
@@ -48,13 +49,19 @@ const data = {
         },
         {
             id: 'subTree2',
-            name: '分公司2',
+            name: '周明萱',
+            staff: true,
             stockProportion: 70,
         },
         {
             id: 'subTree2-1',
             name: '分公司2-1',
             stockProportion: 100,
+        },
+        {
+            id: 'subTree2-1-1',
+            name: '分公司2-1-1',
+            staff:true
         },
     ],
     edges: [
@@ -103,6 +110,16 @@ const data = {
             id: 'edges9',
             source: 'subTree1-2',
             target: 'subTree1-2-2',
+        },
+        {
+            id: 'edges10',
+            source: 'subTree2-1',
+            target: 'subTree2-1-1',
+        },
+        {
+            id: 'edges11',
+            source: 'subTree2-1-1',
+            target: 'subTree1-1',
         },
     ],
     combos: [

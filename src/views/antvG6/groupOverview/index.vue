@@ -328,6 +328,30 @@ export default {
       }
       return false;
     },
+    // 只有一个节点时，判断是公司节点还是员工节点
+    getNodeType(nodeId) {
+      let nodeType = "";
+      const sourceEdges = ghData.edges.filter((el) => el.source === nodeId);
+      if (sourceEdges.length > 1) {
+        const checkCompanyNodeExist = sourceEdges.some((item) => {
+          let curNode = ghData.nodes.find((el) => item.target === el.id);
+          const staff = curNode?.staff;
+          return !staff;
+        });
+        const checkStaffNodeExist = sourceEdges.some((item) => {
+          let curNode = ghData.nodes.find((el) => item.target === el.id);
+          const staff = curNode?.staff;
+          return staff;
+        });
+        // 存在公司子节点
+        if (checkCompanyNodeExist) {
+          nodeType = "companyNodes";
+        } else if (checkStaffNodeExist) {
+          nodeType = "staffNodes";
+        }
+      }
+      return nodeType;
+    },
     // 查找所有叶子节点
     findLeafNodes(edges) {
       // 使用 Set 存储源和目标节点
@@ -484,26 +508,40 @@ export default {
           const curNodeId = this.attributes.name;
           console.log("curGData", curGData);
           const item = ghData.nodes.find((el) => el.id === curNodeId);
-          // if(graph.getElementState){
-          //   let curState = graph.getElementState(curNodeId);
-          //   if(curState.includes('highlight')){
-          //     console.log(curNodeId,curState)
-          //   }
-          // }
           const isRoot = item?.id === rootId; //'根节点'
           // 取宽高的一半 后边的文本方便居中
           const x = -rectShapeWidth / 2;
           const y = -rectShapeHeight / 2;
+
+          let expandIcon = EXPAND_COMPANY_ICON;
+          let collapsedIcon = COLLAPSE_COMPANY_ICON;
+          if (item.staff) {
+            expandIcon = EXPAND_STAFF_ICON;
+            collapsedIcon = COLLAPSE_STAFF_ICON;
+          } else {
+            expandIcon = EXPAND_COMPANY_ICON;
+            collapsedIcon = COLLAPSE_COMPANY_ICON;
+          }
+
           if (item?.staff) {
             this.upsert(
               "shapeKey1",
-              "circle",
+              // "circle",
+              "rect",
               {
-                x: 0,
-                y: 0,
-                r: 30,
-                stroke: "#4ea2f0",
+                // x: 0,
+                // y: 0,
+                // r: 30,
+                // stroke: "#4ea2f0",
+                // fill: "#f7e2dd",
+                x,
+                y,
+                width: rectShapeWidth,
+                height: rectShapeHeight,
                 fill: "#f7e2dd",
+                stroke: "#4ea2f0",
+                radius: 2,
+                cursor: "pointer",
               },
               this
             );
@@ -599,8 +637,8 @@ export default {
                   x: -rectShapeWidth / 2 + offset - iconSize / 2,
                   y: -y - 6,
                   src: curState.includes("collapse1")
-                    ? COLLAPSE_COMPANY_ICON
-                    : EXPAND_COMPANY_ICON,
+                    ? collapsedIcon
+                    : expandIcon,
                   cursor: "pointer",
                 },
                 this
@@ -616,14 +654,28 @@ export default {
                   x: rectShapeWidth / 2 - offset - iconSize / 2,
                   y: -y - 6,
                   src: curState.includes("collapse2")
-                    ? COLLAPSE_STAFF_ICON
-                    : EXPAND_STAFF_ICON,
+                    ? collapsedIcon
+                    : expandIcon,
                   cursor: "pointer",
                 },
                 this
               );
               // 中
             } else {
+              if (curNodeId === "subTree2-1") {
+                debugger;
+              }
+              const nodeType = _this.getNodeType(curNodeId);
+              let expandIcon = EXPAND_COMPANY_ICON;
+              let collapsedIcon = COLLAPSE_COMPANY_ICON;
+              if (nodeType === "companyNodes") {
+                expandIcon = EXPAND_COMPANY_ICON;
+                collapsedIcon = COLLAPSE_COMPANY_ICON;
+              } else if (nodeType === "staffNodes") {
+                expandIcon = EXPAND_STAFF_ICON;
+                collapsedIcon = COLLAPSE_STAFF_ICON;
+              }
+
               this.upsert(
                 "shapeKey6",
                 "image",
@@ -634,8 +686,8 @@ export default {
                   x: -iconSize / 2,
                   y: -y - 6,
                   src: curState.includes("collapse3")
-                    ? EXPAND_ICON
-                    : COLLAPSE_ICON,
+                    ? expandIcon
+                    : collapsedIcon,
                   cursor: "pointer",
                 },
                 this
@@ -648,7 +700,19 @@ export default {
         onUpdate() {
           // const item = ghData.nodes.find(el => el.id === this.attributes.name);
           const item = graph.getNodeData(this.attributes.name);
+          debugger;
           let curState = graph.getElementState(this.attributes.name);
+
+          let expandIcon = EXPAND_COMPANY_ICON;
+          let collapsedIcon = COLLAPSE_COMPANY_ICON;
+          if (item.staff) {
+            expandIcon = EXPAND_STAFF_ICON;
+            collapsedIcon = COLLAPSE_STAFF_ICON;
+          } else {
+            expandIcon = EXPAND_COMPANY_ICON;
+            collapsedIcon = COLLAPSE_COMPANY_ICON;
+          }
+
           // console.log(123, this.attributes.name)
           // 高亮自定义节点
           if (curState.includes("myHighlight")) {
@@ -656,7 +720,8 @@ export default {
             if (item.staff) {
               this.upsert(
                 "shapeKey1",
-                "circle",
+                // "circle",
+                "rect",
                 {
                   stroke: "red",
                 },
@@ -677,7 +742,8 @@ export default {
             if (item.staff) {
               this.upsert(
                 "shapeKey1",
-                "circle",
+                // "circle",
+                "rect",
                 {
                   stroke: "#4ea2f0",
                 },
@@ -703,8 +769,8 @@ export default {
               "image",
               {
                 src: curState.includes("collapse1")
-                  ? COLLAPSE_COMPANY_ICON
-                  : EXPAND_COMPANY_ICON,
+                  ? collapsedIcon
+                  : expandIcon,
               },
               this
             );
@@ -716,8 +782,8 @@ export default {
               "image",
               {
                 src: curState.includes("collapse2")
-                  ? COLLAPSE_STAFF_ICON
-                  : EXPAND_STAFF_ICON,
+                  ? collapsedIcon
+                  : expandIcon,
               },
               this
             );
@@ -729,8 +795,8 @@ export default {
               "image",
               {
                 src: curState.includes("collapse3")
-                  ? EXPAND_ICON
-                  : COLLAPSE_ICON,
+                  ? expandIcon
+                  : collapsedIcon,
               },
               this
             );
@@ -860,7 +926,12 @@ export default {
           nodesep: 5,
           sortByCombo: true,
         },
-        behaviors: ["drag-element"],
+        behaviors: [
+          "drag-element",
+          "drag-canvas",
+          "zoom-canvas",
+          "zoom-canvas",
+        ],
       });
 
       await graph.render();
