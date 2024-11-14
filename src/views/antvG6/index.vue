@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container w-full" style="max-width:100%;">
     <div class="left">
       <el-menu
         default-active="2"
@@ -60,7 +60,7 @@
         </el-submenu>
       </el-menu>
     </div>
-    <div class="right">
+    <div class="right w-full">
       <router-view></router-view>
     </div>
   </div>
