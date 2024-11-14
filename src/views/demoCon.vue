@@ -24,7 +24,7 @@ export default {
   components: {},
   data() {
     return {
-      activeName: '4',
+      activeName: '6',
       demoList: [
         {
           id: '1',
@@ -50,6 +50,11 @@ export default {
           id: '5',
           title: 'demo5',
           component: () => import('./demo5.vue')
+        },
+        {
+          id: '6',
+          title: 'demo6',
+          component: () => import('./demo6.vue')
         },
       ],
     }
