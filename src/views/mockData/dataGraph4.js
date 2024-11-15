@@ -11,49 +11,57 @@ const data = {
         {
             id: 'subTree1',
             name: '分公司1',
-            stockProportion: 30,
         },
         {
             id: 'subTree1-1',
             name: "分公司1-1",
+            category: 'rootCompany',
+            list: {
+                num1: '1111',
+                num2: '1112',
+                num3: '1113',
+                num4: '1114',
+                num5: '1115',
+                num6: '1116',
+                num7: '1117',
+                num8: '1118',
+                num9: '1119',
+            },
             combo: "A",
-            stockProportion: 90,
         },
         {
             id: 'subTree1-1-1',
             name: "分公司1-1-1",
             combo: "A",
-            stockProportion: 100,
         },
         {
             id: 'subTree1-2',
             name: "员工1-2",
-            staff: true,
+            category: 'staff',
             combo: "B",
-            stockProportion: 10,
         },
+        // {
+        //     id: 'subTree1-2-11',
+        //     name: "员工企业-1",
+        // },
         {
             id: 'subTree1-2-1',
             name: "员工1-2-1",
             combo: "B",
-            staff: true,
-            stockProportion: 10,
+            category: 'staff',
         },
         {
             id: 'subTree1-2-2',
             name: "员工1-2-2",
-            staff: true,
-            stockProportion: 10,
+            category: 'staff',
         },
         {
             id: 'subTree2',
             name: '分公司2',
-            stockProportion: 70,
         },
         {
             id: 'subTree2-1',
             name: '分公司2-1',
-            stockProportion: 100,
         },
     ],
     edges: [
@@ -103,6 +111,11 @@ const data = {
             source: 'subTree1-2',
             target: 'subTree1-2-2',
         },
+        // {
+        //     id: 'edges10',
+        //     source: 'subTree1-2',
+        //     target: 'subTree1-2-11',
+        // },
     ],
     combos: [
         {
