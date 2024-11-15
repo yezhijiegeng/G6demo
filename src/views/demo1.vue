@@ -1,5 +1,5 @@
 <template>
-  <div class="demo1Page relative">
+  <div class="demo1Page relative w-full h-full">
     <div class="" style="position: absolute; top: 0;left: 0;">
       <el-input style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" clearable
         placeholder="搜索"></el-input>

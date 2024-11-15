@@ -1,5 +1,5 @@
 <template>
-  <div class="demo4Page relative">
+  <div class="demo4Page relative w-full h-full">
     <div class="" style="position: absolute; top: 0;left: 0; z-index: 1;">
       <el-select style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" filterable
         placeholder="请选择" clearable>

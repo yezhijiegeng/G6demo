@@ -6,8 +6,8 @@ import "tailwindcss/tailwind.css";
 import "@/assets/index.scss";
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
-// import "./assets/styles/tailwindcss.css"
-
+// import "quill/dist/quill.core.css";
+// import "quill/dist/quill.snow.css";
 Vue.use(ElementUI);
 
 Vue.config.productionTip = false

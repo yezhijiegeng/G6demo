@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="demo3Page relative w-full h-full">
     <!-- <div class="" style="position: absolute; top: 0;left: 0;">
       <el-input style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" clearable
         placeholder="搜索"></el-input>
@@ -31,6 +31,7 @@ export default {
   mounted() {
     let graph = new Graph({
       container: 'mountNode3',
+      animation: false,
       autoFit: 'center',
       data: ghData,
       node: {
