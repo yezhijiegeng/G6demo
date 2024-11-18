@@ -5,10 +5,24 @@
       <el-aside style="border-right: 1px solid #ccc; width: 200px;">
         <el-menu :default-active="activeName" @select="handleSelect" class="el-menu-vertical-demo" @open="handleOpen"
           @close="handleClose">
-          <el-menu-item :index="item.id" v-for="(item, index) in demoList" :key="index">
-            <i class="el-icon-document"></i>
-            <span slot="title">{{ item.title }}</span>
-          </el-menu-item>
+          <el-submenu index="ta">
+            <template slot="title">
+              <i class="el-icon-document"></i>
+              <span>tDemo</span>
+            </template>
+            <el-menu-item :index="item.id" v-for="(item, index) in tDemoList" :key="index">
+              <span slot="title">{{ item.title }}</span>
+            </el-menu-item>
+          </el-submenu>
+          <el-submenu index="du">
+            <template slot="title">
+              <i class="el-icon-document"></i>
+              <span>DDemo</span>
+            </template>
+            <el-menu-item :index="item.id" v-for="(item, index) in ddemoList" :key="index">
+              <span slot="title">{{ item.title }}</span>
+            </el-menu-item>
+          </el-submenu>
         </el-menu>
       </el-aside>
       <el-main>
@@ -25,7 +39,7 @@ export default {
   data() {
     return {
       activeName: '4',
-      demoList: [
+      ddemoList: [
         {
           id: '1',
           title: 'demo1',
@@ -57,11 +71,21 @@ export default {
           component: () => import('./demo6.vue')
         },
       ],
+      tDemoList: [
+        {
+          id: 't1',
+          title: 'demo1',
+          component: () => import('./demo1.vue')
+        },
+      ],
     }
   },
   computed: {
     curComponents() {
-      return this.demoList.find(el => el.id === this.activeName).component;
+      const findCom = [...this.ddemoList, ...this.tDemoList].find(el => el.id === this.activeName)?.component;
+      if (findCom) {
+        return findCom
+      }
     },
   },
   methods: {
