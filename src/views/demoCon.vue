@@ -24,13 +24,8 @@ export default {
   components: {},
   data() {
     return {
-      activeName: '5',
+      activeName: '4',
       demoList: [
-        {
-          id: '1_1',
-          title: 'tog6',
-          component: () => import('./antvG6/index.vue')
-        },
         {
           id: '1',
           title: 'demo1',
@@ -72,10 +67,6 @@ export default {
   methods: {
     handleSelect(val) {
       this.activeName = val
-        if(val.startsWith("/")){
-        this.$router.push(val)
-      }
-      
     },
     handleOpen() { },
     handleClose() { },

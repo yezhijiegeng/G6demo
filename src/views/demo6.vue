@@ -1,4 +1,4 @@
-<!-- <template>
+<template>
   <div class="demo6Page w-full h-full flex flex-col">
     <div class="flex-1" id="editor"></div>
     <div class="mt-2 flex justify-start">
@@ -138,4 +138,4 @@ export default {
 .demo6Page {
   // 
 }
-</style> -->
+</style>
