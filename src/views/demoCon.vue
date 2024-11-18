@@ -27,6 +27,11 @@ export default {
       activeName: '4',
       demoList: [
         {
+          id: '0',
+          title: 'toG6',
+          component: () => import('../views/antvG6/index.vue'),
+        },
+        {
           id: '1',
           title: 'demo1',
           component: () => import('./demo1.vue')

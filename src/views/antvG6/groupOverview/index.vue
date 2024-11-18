@@ -1,63 +1,32 @@
 <template>
   <div class="demo4Page relative w-full h-full">
-    <div class="" style="position: absolute; top: 0; left: 0; z-index: 1">
-      <el-select
-        style="width: 200px; margin-right: 10px"
-        size="mini"
-        v-model.trim="searchVal"
-        filterable
-        placeholder="请选择"
-        clearable
-      >
-        <el-option
-          v-for="item in ghData.nodes"
-          :key="item.value"
-          :label="item.name"
-          :value="item.id"
-        >
+    <div class="" style="position: absolute; top: 0;left: 0; z-index: 1;">
+      <el-select style="width: 200px;margin-right: 10px;" size="mini" v-model.trim="searchVal" filterable
+        placeholder="请选择" clearable>
+        <el-option v-for="item in ghData.nodes" :key="item.value" :label="item.name" :value="item.id">
         </el-option>
       </el-select>
       <el-button type="primary" size="mini" @click="searchFunc">搜索</el-button>
-      <!--  <el-button class="mr-2" type="info" size="mini" @click="expandClick"
-        >全展开</el-button
-      > -->
-      <el-radio-group
-        v-model="isCollapse"
-        style="margin-bottom: 20px"
-        @input="inputChange"
-        size="mini"
-        class="mt-5 ml-1"
-      >
-        <el-radio-button :label="false">全展开</el-radio-button>
-        <el-radio-button :label="true">收起</el-radio-button>
-      </el-radio-group>
+      <el-button class="mr-2" type="info" size="mini" @click="expandClick">全展开</el-button>
     </div>
     <div class="w-full h-full" id="mountNode4"></div>
   </div>
 </template>
 
 <script>
-import {
-  ExtensionCategory,
-  Graph,
-  Rect,
-  BaseEdge,
-  Line,
-  register,
-  NodeEvent,
-  HTML,
-} from "@/assets/js/g6V5.min";
+import { ExtensionCategory, Graph, Rect, BaseEdge, Line, register, NodeEvent } from '@/assets/js/g6V5.min';
 // import { Rect as RectGeometry, text } from '@antv/g';
 // import { GNode, Group, Image, Rect, Text } from '@antv/g6-extension-react';
-import ghData from "../../mockData/dataGraph4_3";
-import _ from "lodash";
-const COLLAPSE_ICON = require("@/assets/images/collapse.png");
-const EXPAND_ICON = require("@/assets/images/expand.png");
-// const COLLAPSE_ICON = require('@/assets/images/icon/company.png');
-const COLLAPSE_COMPANY_ICON = require("@/assets/images/icon/company.png");
-const EXPAND_COMPANY_ICON = require("@/assets/images/icon/company1.png");
-const COLLAPSE_STAFF_ICON = require("@/assets/images/icon/staff.png");
-const EXPAND_STAFF_ICON = require("@/assets/images/icon/staff1.png");
+import ghData from '../../mockData/dataGraph4_3'
+import _ from 'lodash'
+// const COLLAPSE_ICON = require('@/assets/images/collapse.png');
+// const EXPAND_ICON = require('@/assets/images/expand.png');
+
+const COMPANY_COLLAPSE_ICON = require('@/assets/images/company1.png');
+const COMPANY_EXPAND_ICON = require('@/assets/images/company.png');
+
+const STAFF_COLLAPSE_ICON = require('@/assets/images/staff1.png');
+const STAFF_EXPAND_ICON = require('@/assets/images/staff.png');
 // const COLLAPSE_ICON = function COLLAPSE_ICON(x, y, r) {
 //   return [
 //     ['M', x - r, y - r],
@@ -80,22 +49,22 @@ const EXPAND_STAFF_ICON = require("@/assets/images/icon/staff1.png");
 // };
 const rectShapeWidth = 144;
 const rectShapeHeight = 54;
-// const rootCompanyWidth = 144;
-// const rootCompanyHeight = 108;
-
-const rootId = "rootId";
+const rootCompanyShapeWidth = 160;
+// const rootCompanyShapeWidth = 180;
+const rootCompanyShapeHeight = 170;
+const rootId = 'rootId';
 let graph;
 let curGData;
 export default {
-  name: "HomeView",
-  components: {},
+  name: 'HomeView',
+  components: {
+  },
   data() {
     return {
-      searchVal: "",
+      searchVal: '',
       ghData,
-      isCollapse: true,
       // graph: null,
-    };
+    }
   },
   methods: {
     // 搜索当前已渲染出来的节点
@@ -103,55 +72,50 @@ export default {
       // 获取当前所有数据
       const { nodes, edges } = graph.getData();
       // 清空上一次搜索
-      [...nodes, ...edges].forEach((el) => {
+      [...nodes, ...edges].forEach(el => {
         let id = el.id;
         let curState = graph.getElementState(id);
-        if (curState.includes("myHighlight")) {
+        if (curState.includes('myHighlight')) {
           graph.setElementState({
-            [id]: curState.filter((el) => el !== "myHighlight"),
-          });
+            [id]: curState.filter(el => el !== 'myHighlight')
+          })
         }
-      });
+      })
 
       if (this.searchVal) {
         // 如果当前搜索的节点在
         let nodeIds = [this.searchVal];
         // 找到所有父节点，并且高亮
         const finParentIdsFunc = (curId) => {
-          const curEdges = ghData.edges.filter((el) => {
+          const curEdges = ghData.edges.filter(el => {
             return curId === el.target;
-          });
+          })
           if (curEdges.length > 0) {
-            curEdges.forEach((el) => {
-              nodeIds.push(el.source);
-              finParentIdsFunc(el.source);
-            });
+            curEdges.forEach(el => {
+              nodeIds.push(el.source)
+              finParentIdsFunc(el.source)
+            })
           }
-        };
-        finParentIdsFunc(this.searchVal);
+        }
+        finParentIdsFunc(this.searchVal)
 
         let stateObj = {};
         // 高亮节点
-        nodeIds.forEach((el) => {
+        nodeIds.forEach(el => {
           let id = el;
           let curState = graph.getElementState(id) || [];
-          curState.push("myHighlight");
+          curState.push('myHighlight');
           stateObj[id] = curState;
-        });
+        })
         // 高亮边
-        let edgesIds = ghData.edges
-          .filter(
-            (item) =>
-              nodeIds.includes(item.source) && nodeIds.includes(item.target)
-          )
-          .map((ele) => ele.id);
+        let edgesIds = ghData.edges.filter(item => nodeIds.includes(item.source) && nodeIds.includes(item.target)).map(ele => ele.id);
         edgesIds = [...new Set(edgesIds)];
-        edgesIds.forEach((el) => {
+        edgesIds.forEach(el => {
           let id = el;
           let curState = graph.getElementState(id) || [];
-          curState.push("myHighlight");
+          curState.push('myHighlight');
           stateObj[id] = curState;
-        });
+        })
 
         graph.setElementState(stateObj);
         graph.render();
@@ -166,12 +130,12 @@ export default {
       if (!targetNode) {
         // 清当前高亮
         let stateObj = {};
-        [...curGrahData.nodes, ...curGrahData.edges].forEach((el) => {
+        [...curGrahData.nodes, ...curGrahData.edges].forEach(el => {
           let id = el.id;
           let curState = graph.getElementState(id);
-          curState = curState.filter((item) => item !== "myHighlight");
+          curState = curState.filter(item => item !== 'myHighlight');
           stateObj[id] = curState;
-        });
+        })
         graph.setElementState(stateObj);
         return;
       }
@@ -179,7 +143,7 @@ export default {
         // 找到这个节点的所有祖先节点，，以及吗以及每一个祖先节点的第一层子节点
         // 构建邻接表
         const graphObj = {};
-        originGhDataCopy.edges.forEach((edge) => {
+        originGhDataCopy.edges.forEach(edge => {
           if (!graphObj[edge.source]) {
             graphObj[edge.source] = [];
           }
@@ -204,7 +168,7 @@ export default {
         // 查找每个祖先节点的第一层子节点
         function findChildren(ancestors) {
           const childrenMap = {};
-          ancestors.forEach((ancestor) => {
+          ancestors.forEach(ancestor => {
             if (graphObj[ancestor]) {
               childrenMap[ancestor] = graphObj[ancestor];
             } else {
@@ -218,44 +182,42 @@ export default {
           let allNodesIds = [];
           for (let [key, val] of Object.entries(childrenMap)) {
             allNodesIds.push(key);
-            allNodesIds = allNodesIds.concat(val);
+            allNodesIds = allNodesIds.concat(val)
           }
-          allNodesIds = [...new Set(allNodesIds)];
-          let allNodes = originGhDataCopy.nodes.filter((el) => {
-            return allNodesIds.includes(el.id);
+          allNodesIds = [...new Set(allNodesIds)]
+          let allNodes = originGhDataCopy.nodes.filter(el => {
+            return allNodesIds.includes(el.id)
           });
-          allNodes.forEach((el) => {
+          allNodes.forEach(el => {
             el.states = [];
             // 设置祖先节点高亮
             if (ancestors.includes(el.id)) {
-              el.states = ["myHighlight"];
+              el.states = ['myHighlight']
             }
             // 设置自己也高亮
             if (el.id === targetNode) {
-              el.states = ["myHighlight"];
+              el.states = ['myHighlight']
             }
           });
-          return allNodes;
+          return allNodes
         }
 
         // 获取所有边并设置直接边节点的高亮状态
         function getAllEdges(ancestors, childrenMap) {
-          ancestors = [...ancestors, targetNode];
+          ancestors = [...ancestors, targetNode]
           let allEdges = [];
           for (let [key, val] of Object.entries(childrenMap)) {
-            val.forEach((item) => {
-              let curFind = originGhDataCopy.edges.find(
-                (el) => el.source === key && el.target === item
-              );
+            val.forEach(item => {
+              let curFind = originGhDataCopy.edges.find(el => el.source === key && el.target === item);
               if (ancestors.includes(item)) {
-                curFind.states = ["myHighlight"];
+                curFind.states = ['myHighlight'];
               } else {
                 curFind.states = [];
               }
-              allEdges.push(curFind);
-            });
+              allEdges.push(curFind)
+            })
           }
-          return allEdges;
+          return allEdges
         }
 
         // 主函数
@@ -264,7 +226,7 @@ export default {
           // 一个节点可能同时有多个父节点，需要去重
           // ancestors结构
           // ['subTree2', 'rootId', 'subTree1']
-          ancestors = [...new Set(ancestors)];
+          ancestors = [...new Set(ancestors)]
           // childrenMap结构
           // {
           //     "subTree2": ["subTree2-1"],
@@ -272,7 +234,7 @@ export default {
           //     "subTree1": ["subTree1-1","subTree1-2","subTree2-1"]
           // }
           const childrenMap = findChildren(ancestors);
-          console.log("childrenMap", childrenMap);
+          console.log("childrenMap", childrenMap)
           const allNodes = getAllNodes(ancestors, childrenMap);
           const allEdges = getAllEdges(ancestors, childrenMap);
 
@@ -283,45 +245,45 @@ export default {
         }
 
         const allResObj = getAncestorsAndChildren(targetNode);
-        const curCombos = this.findCombos(allResObj.allNodes);
+        const curCombos = this.findCombos(allResObj.allNodes)
 
         const curData = {
           nodes: allResObj.allNodes,
           edges: allResObj.allEdges,
-          combos: curCombos,
-        };
+          combos: curCombos
+        }
 
-        console.log("searchData", curData);
+        console.log("searchData", curData)
         graph.destroy();
         await this.initGraph(curData);
         // 设置叶子节点折叠状态
         // 需await等待graph render完成才能进行
-        this.setLeafColAndExpandState();
+        this.setLeafColAndExpandState()
       }
     },
     findCombos(nodes) {
-      let combsIds = nodes.filter((el) => el.combo).map((el) => el.combo);
+      let combsIds = nodes.filter(el => el.combo).map(el => el.combo)
       combsIds = [...new Set(combsIds)];
-      const curCombos = ghData.combos.filter((el) => combsIds.includes(el.id));
-      return curCombos;
+      const curCombos = ghData.combos.filter(el => combsIds.includes(el.id));
+      return curCombos
     },
     // 判断有子节点
     checkChildNodesExist(nodeId, edges = ghData.edges) {
-      const sourceEdges = edges.filter((el) => el.source === nodeId);
-      return sourceEdges.length > 0;
+      const sourceEdges = edges.filter(el => el.source === nodeId);
+      return sourceEdges.length > 0
     },
     // 判断是否同时存在公司节点和员工节点
     checkCompanyNodeAndStaffNodeExist(nodeId) {
-      const sourceEdges = ghData.edges.filter((el) => el.source === nodeId);
+      const sourceEdges = ghData.edges.filter(el => el.source === nodeId);
       if (sourceEdges.length > 1) {
-        const checkCompanyNodeExist = sourceEdges.some((item) => {
-          let curNode = ghData.nodes.find((el) => item.target === el.id);
-          const staff = curNode?.staff;
+        const checkCompanyNodeExist = sourceEdges.some(item => {
+          let curNode = ghData.nodes.find(el => item.target === el.id);
+          const staff = curNode?.category === 'staff';
           return !staff;
         });
-        const checkStaffNodeExist = sourceEdges.some((item) => {
-          let curNode = ghData.nodes.find((el) => item.target === el.id);
-          const staff = curNode?.staff;
+        const checkStaffNodeExist = sourceEdges.some(item => {
+          let curNode = ghData.nodes.find(el => item.target === el.id);
+          const staff = curNode?.category === 'staff';
           return staff;
         });
         // 存在公司和员工的子节点
@@ -331,30 +293,6 @@ export default {
       }
       return false;
     },
-    // 只有一个节点时，判断是公司节点还是员工节点
-    getNodeType(nodeId) {
-      let nodeType = "";
-      const sourceEdges = ghData.edges.filter((el) => el.source === nodeId);
-      if (sourceEdges.length > 1) {
-        const checkCompanyNodeExist = sourceEdges.some((item) => {
-          let curNode = ghData.nodes.find((el) => item.target === el.id);
-          const staff = curNode?.staff;
-          return !staff;
-        });
-        const checkStaffNodeExist = sourceEdges.some((item) => {
-          let curNode = ghData.nodes.find((el) => item.target === el.id);
-          const staff = curNode?.staff;
-          return staff;
-        });
-        // 存在公司子节点
-        if (checkCompanyNodeExist) {
-          nodeType = "companyNodes";
-        } else if (checkStaffNodeExist) {
-          nodeType = "staffNodes";
-        }
-      }
-      return nodeType;
-    },
     // 查找所有叶子节点
     findLeafNodes(edges) {
       // 使用 Set 存储源和目标节点
@@ -362,15 +300,15 @@ export default {
       const targets = new Set();
 
       // 遍历 edges，分别将 source 和 target 加入集合
-      edges.forEach((edge) => {
+      edges.forEach(edge => {
         sources.add(edge.source);
         targets.add(edge.target);
       });
 
       // 叶子节点是那些在 targets 中但不在 sources 中的节点
-      const leafNodes = [...targets].filter((target) => !sources.has(target));
+      const leafNodes = [...targets].filter(target => !sources.has(target));
       // console.log(leafNodes); // 输出叶子节点
-      return leafNodes;
+      return leafNodes
     },
     // 查找某个节点下的所有子孙节点
     findChildrenByEdges(nodeId, edges) {
@@ -378,7 +316,7 @@ export default {
         let children = [];
 
         // 查找所有直接子节点
-        curEdges.forEach((edge) => {
+        curEdges.forEach(edge => {
           if (edge.source === curNodeId) {
             children.push(edge.target);
             // 递归查找当前子节点的所有子节点
@@ -387,43 +325,39 @@ export default {
         });
 
         return children;
-      };
+      }
       const allChildren = findChildren(nodeId, edges);
-      return allChildren;
+      return allChildren
     },
 
     setLeafColAndExpandState() {
       const graphData = graph.getData();
       let leafNodesIds = this.findLeafNodes(graphData.edges);
-      let leafNodes = graphData.nodes.filter((el) =>
-        leafNodesIds.includes(el.id)
-      );
+      let leafNodes = graphData.nodes.filter(el => leafNodesIds.includes(el.id));
       // 设置折叠状态
-      let statesObj = {};
-      leafNodes.forEach((el) => {
+      let statesObj = {}
+      leafNodes.forEach(el => {
         if (this.checkChildNodesExist(el.id)) {
           let curState = graph.getElementState(el.id) || [];
           if (this.checkCompanyNodeAndStaffNodeExist(el.id)) {
-            curState = curState.concat(["collapse1", "collapse2"]);
+            curState = curState.concat(['collapse1', 'collapse2']);
             curState = [...new Set(curState)];
             statesObj[el.id] = curState;
           } else {
-            curState = curState.concat(["collapse3"]);
+            curState = curState.concat(['collapse3']);
             curState = [...new Set(curState)];
             statesObj[el.id] = curState;
           }
         }
-      });
+      })
       graph.setElementState(statesObj);
     },
     findRootId() {
       // 查找根节点 作为source 且没有 作为target
-      let rootArr = ghData.edges.map((el) => el.source);
+      let rootArr = ghData.edges.map(el => el.source);
       // 去重
       rootArr = [...new Set(rootArr)];
-      rootArr = rootArr.filter((item) =>
-        ghData.edges.every((el) => item !== el.target)
-      );
+      rootArr = rootArr.filter(item => ghData.edges.every(el => item !== el.target));
       // 默认第一个
       const rootId = rootArr[0];
       return rootId;
@@ -457,15 +391,13 @@ export default {
 
         const findNodesIds = Array.from(result.nodes);
 
-        findNodes = gDataCopy.nodes.filter((el) =>
-          findNodesIds.includes(el.id)
-        );
+        findNodes = gDataCopy.nodes.filter(el => findNodesIds.includes(el.id));
         findEdges = Array.from(result.edges);
       } else {
-        findNodes = gDataCopy.nodes.filter((el) => el.id === rootId);
+        findNodes = gDataCopy.nodes.filter(el => el.id === rootId);
       }
 
-      console.log(11, findNodes);
+      console.log(11, findNodes)
 
       // 初始化节点展开状态
       // 同时存在公司节点和员工节点
@@ -474,277 +406,205 @@ export default {
 
       // 只存在员工节点或者公司节点
       // collapse3折叠公司节点，expand3展开员工节点
-      findNodes.forEach((item) => {
+      findNodes.forEach(item => {
         if (this.checkCompanyNodeAndStaffNodeExist(item.id)) {
           if (item.id === rootId) {
-            item.states = ["collapse1", "collapse2"];
+            item.states = ['collapse1', 'collapse2']
           } else {
-            item.states = ["collapse1", "collapse2"];
+            item.states = ['collapse1', 'collapse2']
           }
         } else {
           if (item.id === rootId) {
-            item.states = ["collapse3"];
+            item.states = ['collapse3']
           } else {
-            item.states = ["collapse3"];
+            item.states = ['collapse3']
           }
         }
-      });
+      })
 
-      const curCombos = this.findCombos(findNodes);
+      const curCombos = this.findCombos(findNodes)
 
       return {
         nodes: findNodes,
         edges: findEdges,
         combos: curCombos,
-      };
+      }
       // console.log(22,findNodes,findEdges)
     },
+    // 子节点只有一种类型的时候判断子节点 是哪一种节点（员工，公司）
     expandClick() {
       graph.destroy();
       this.initGraph(_.cloneDeep(ghData));
+    },
+    getCollapseAndExpandIcon(collapseState, curNodeId) {
+      let curIcon = null;
+      const targetEdge = ghData.edges.find(el => el.source === curNodeId);
+      const targetNode = ghData.nodes.find(el => el.id === targetEdge.target);
+      if (collapseState) {
+        if (targetNode?.category === 'staff') {
+          curIcon = STAFF_EXPAND_ICON;
+        } else {
+          curIcon = COMPANY_EXPAND_ICON;
+        }
+      } else {
+        if (targetNode?.category === 'staff') {
+          curIcon = STAFF_COLLAPSE_ICON;
+        } else {
+          curIcon = COMPANY_COLLAPSE_ICON;
+        }
+      }
+      return curIcon
     },
     async initGraph(curOriginDta) {
       const _this = this;
       class SelfNode1 extends Rect {
         onCreate() {
-          const [width, height] = this.getSize();
+          // const [width, height] = this.getSize();
           const curNodeId = this.attributes.name;
-          console.log("curGData", curGData);
-          const item = ghData.nodes.find((el) => el.id === curNodeId);
-          const isRoot = item?.id === rootId; //'根节点'
+          const curNodeData = this.attributes.nodeData;
+          console.log("curGData", curGData)
+          // const item = ghData.nodes.find(el => el.id === curNodeId);
+
+          const isRoot = curNodeData?.id === rootId //'根节点'
           // 取宽高的一半 后边的文本方便居中
-          const x = -rectShapeWidth / 2;
-          const y = -rectShapeHeight / 2;
-
-          if (item?.category === "staff") {
-            this.upsert(
-              "shapeKey1",
-              // "circle",
-              "rect",
-              {
-                // x: 0,
-                // y: 0,
-                // r: 30,
-                // stroke: "#4ea2f0",
-                // fill: "#f7e2dd",
-                x,
-                y,
-                width: rectShapeWidth,
-                height: rectShapeHeight,
-                // width: rectShapeWidth,
-                //   height: rectShapeHeight*4 ,
-                fill: "#f7e2dd",
-                stroke: "#4ea2f0",
-                radius: 2,
-                cursor: "pointer",
-              },
-              this
-            );
+          const x = -rectShapeWidth / 2
+          const y = -rectShapeHeight / 2
+          if (curNodeData?.category === 'staff') {
+            // this.upsert('staffShape', "circle", {
+            //   x: 0,
+            //   y: 0,
+            //   r: 30,
+            //   stroke: '#4ea2f0',
+            //   fill: '#f7e2dd',
+            // }, this);
+            this.upsert('staffShape', "rect", {
+              x,
+              y,
+              width: rectShapeWidth,
+              height: rectShapeHeight,
+              fill: '#ecc1e7',
+              stroke: '#4ea2f0',
+              radius: 50,
+              cursor: 'pointer'
+            }, this);
+          } else if (curNodeData?.category === 'rootCompany') {
+            this.upsert('rootCompanyShape', "rect", {
+              x,
+              y,
+              width: rootCompanyShapeWidth,
+              height: rootCompanyShapeHeight,
+              fill: isRoot ? '#4ea2f0' : '#fff',
+              stroke: '#ecc1e7',
+              radius: 2,
+              cursor: 'pointer'
+            }, this);
           } else {
-            if (item.category === "rootCompany") {
-              this.upsert(
-                "rootCompanyKey4",
-                "rect",
-                {
-                  x,
-                  y,
-                  width: rectShapeWidth,
-                  height: rectShapeHeight*4 ,
-                  fill: isRoot ? "#4ea2f0" : "#fff",
-                  stroke: "#F56C6C",
-                  radius: 2,
-                  cursor: "pointer",
-                },
-                this
-              );
-
-              /* const color = "#999";
-              const customHtml = `<div
-							style="
-								width:${rectShapeWidth}px;
-								height: ${rectShapeHeight}px;
-								background: #fff;
-								border: 1px solid #e28334;
-								color: #999;
-								user-select: none;
-								display: flex;
-								padding: 10px;
-								"
-						>
-							<div style="display: flex;flex-direction: column;flex: 1;">
-								<div style="font-weight: bold;">
-									名称：${item.name} 
-									ID:${item.id} 
-								</div>
-								<div>
-								</div>
-							</div>
-						</div>`;
-
-              this.upsert(
-                "custom-NodeHtml1",
-                "html",
-                {
-                  // size: [240, 80],
-                  // size: [240, 80],
-                  dx: -40,
-                  dy: -40,
-                  x: -72,
-                  y: -54,
-                  innerHTML: customHtml,
-                },
-                this
-              ); */
-            } else {
-              this.upsert(
-                "shapeKey2",
-                "rect",
-                {
-                  x,
-                  y,
-                  width: rectShapeWidth,
-                  height: rectShapeHeight,
-                  // width: rectShapeWidth,
-                  // height: rectShapeHeight*4 ,
-                  fill: isRoot ? "#4ea2f0" : "#fff",
-                  stroke: "#4ea2f0",
-                  radius: 2,
-                  cursor: "pointer",
-                },
-                this
-              );
-            }
+            this.upsert('commonShape', "rect", {
+              x,
+              y,
+              width: rectShapeWidth,
+              height: rectShapeHeight,
+              fill: isRoot ? '#4ea2f0' : '#fff',
+              stroke: '#4ea2f0',
+              radius: 2,
+              cursor: 'pointer'
+            }, this);
           }
-          if(item.category === "rootCompany"){
+
+          // 插入内容
+          if (curNodeData?.category === 'rootCompany') {
             this.upsert(
-              "shapeKeyHtmlText",
+              "rootCompanyTextShape",
               "html",
               {
-                // text: `${item?.name}\nsdf`,
-                x: -rectShapeWidth/2,
-                y: -rectShapeHeight/2,
-                // width: rectShapeWidth,
-                // height: rectShapeHeight*4 ,
-                // x: -rectShapeWidth,
-                // y: -rectShapeHeight,
-                // width: rectShapeWidth,
-                // height: rectShapeHeight,
+                x,
+                y,
+                // width: rootCompanyShapeWidth,
+                // height: rootCompanyShapeHeight,
                 // textAlign: "left",
                 // textBaseline: "middle",
                 // fill: isRoot ? "#fff" : "#303242",
                 // fontSize: 14,
                 cursor: "pointer",
-                innerHTML:`
-                <div style="text-align:left;color:#000;background:#fff;width:${rectShapeWidth}px;height:${rectShapeHeight}px;">
-                  <div style="">根公司：XXXXXXX<div>
-                  <div style="">${item?.name}<div>
-                  <div style="">${item?.name}<div>
-                  <div style="">${item?.name}<div>
-                  <div style="">${item?.name}<div>
-                  <div style="">${item?.name}<div>
-                  <div style="">${item?.name}<div>
-                  <div style="">${item?.name}<div>
-                  <div style="">${item?.name}<div>
+                innerHTML: `
+                <div class="rootCompanyTextShapeCssClass">
+                  <div style="">标题标题1：XX共${curNodeData.list.num1}家<div>
+                  <div style="">标题标题2：XX共${curNodeData.list.num2}家<div>
+                  <div style="">标题标题3：XX共${curNodeData.list.num3}家<div>
+                  <div style="">标题标题4：XX共${curNodeData.list.num4}家<div>
+                  <div style="">标题标题5：XX共${curNodeData.list.num5}家<div>
+                  <div style="">标题标题6：XX共${curNodeData.list.num6}家<div>
+                  <div style="">标题标题7：XX共${curNodeData.list.num7}家<div>
+                  <div style="">标题标题8：XX共${curNodeData.list.num8}家<div>
+                  <div style="">标题标题9：XX共${curNodeData.list.num9}家<div>
                 </div>
                 `,
               },
               this
             );
-          }else{
-            this.upsert(
-            "shapeKey3",
-            "text",
-            {
-              text: `${item?.name}`,
-              // 换行
-              // text: `${item?.name}\nsdf`,
+          } else {
+            this.upsert('textShape', "text", {
+              text: curNodeData?.name,
               x: 0,
               y: 0,
-              textAlign: "center",
-              textBaseline: "middle",
-              fill: isRoot ? "#fff" : "#303242",
+              textAlign: 'center',
+              textBaseline: 'middle',
+              fill: isRoot ? '#fff' : '#303242',
               fontSize: 14,
-              cursor: "pointer",
-            },
-            this
-          );
+              cursor: 'pointer'
+            }, this);
           }
-          
 
           const iconSize = 14;
-          // 画展开折叠图标
+          // 插入展开折叠图标
           // 有子节点
-          // console.log("onCreate", curNodeId);
-          if (ghData.edges.find((el) => el.source === curNodeId)) {
+          console.log("onCreate", curNodeId)
+          if (ghData.edges.find(el => el.source === curNodeId)) {
             let curState = graph.getElementState(curNodeId);
-            // console.log("onCreate", curNodeId, curState);
+            console.log("onCreate", curNodeId, curState)
             if (_this.checkCompanyNodeAndStaffNodeExist(curNodeId)) {
               const offset = 30;
               // 左
-              this.upsert(
-                "shapeKey4",
-                "image",
-                {
-                  // size: 20,
-                  width: iconSize,
-                  height: iconSize,
-                  x: -rectShapeWidth / 2 + offset - iconSize / 2,
-                  y: -y - 6,
-                  src: curState.includes("collapse1")
-                    ? COLLAPSE_COMPANY_ICON
-                    : EXPAND_COMPANY_ICON,
-                  cursor: "pointer",
-                },
-                this
-              );
+              this.upsert('shapeKey4', "image", {
+                // size: 20,
+                width: iconSize,
+                height: iconSize,
+                x: -rectShapeWidth / 2 + offset - iconSize / 2,
+                y: -y - 6,
+                src: curState.includes('collapse1') ? COMPANY_EXPAND_ICON : COMPANY_COLLAPSE_ICON,
+                cursor: 'pointer'
+              }, this);
               // 右
-              this.upsert(
-                "shapeKey5",
-                "image",
-                {
-                  // size: 20,
-                  width: iconSize,
-                  height: iconSize,
-                  x: rectShapeWidth / 2 - offset - iconSize / 2,
-                  y: -y - 6,
-                  src: curState.includes("collapse2")
-                    ? COLLAPSE_STAFF_ICON
-                    : EXPAND_STAFF_ICON,
-                  cursor: "pointer",
-                },
-                this
-              );
+              this.upsert('shapeKey5', "image", {
+                // size: 20,
+                width: iconSize,
+                height: iconSize,
+                x: rectShapeWidth / 2 - offset - iconSize / 2,
+                y: -y - 6,
+                src: curState.includes('collapse2') ? STAFF_EXPAND_ICON : STAFF_COLLAPSE_ICON,
+                cursor: 'pointer'
+              }, this);
               // 中
             } else {
-              if (curNodeId === "rootId") {
-              }
-              const nodeType = _this.getNodeType(curNodeId);
-              let expandIcon = EXPAND_COMPANY_ICON;
-              let collapsedIcon = COLLAPSE_COMPANY_ICON;
-              if (nodeType === "companyNodes") {
-                expandIcon = EXPAND_COMPANY_ICON;
-                collapsedIcon = COLLAPSE_COMPANY_ICON;
-              } else if (nodeType === "staffNodes") {
-                expandIcon = EXPAND_STAFF_ICON;
-                collapsedIcon = COLLAPSE_STAFF_ICON;
+
+              let curY = -y - 6;
+              let curX = -iconSize / 2;
+
+              if (curNodeData?.category === 'rootCompany') {
+                curY += (rootCompanyShapeHeight - rectShapeHeight)
+                curX += (rootCompanyShapeWidth - rectShapeWidth) / 2
               }
 
-              this.upsert(
-                "shapeKey6",
-                "image",
-                {
-                  // size: 20,
-                  width: iconSize,
-                  height: iconSize,
-                  x: -iconSize / 2,
-                  y: -y - 6,
-                  src: curState.includes("collapse3")
-                    ? expandIcon
-                    : collapsedIcon,
-                  cursor: "pointer",
-                },
-                this
-              );
+              this.upsert('shapeKey6', "image", {
+                // size: 20,
+                width: iconSize,
+                height: iconSize,
+                x: curX,
+                y: curY,
+                src: _this.getCollapseAndExpandIcon(curState.includes('collapse3'), curNodeId),
+                // src: curState.includes('collapse3') ? EXPAND_ICON : COLLAPSE_ICON,
+                cursor: 'pointer'
+              }, this);
             }
           }
 
@@ -753,106 +613,60 @@ export default {
         onUpdate() {
           // const item = ghData.nodes.find(el => el.id === this.attributes.name);
           const item = graph.getNodeData(this.attributes.name);
-
           let curState = graph.getElementState(this.attributes.name);
-
-          let expandIcon = EXPAND_COMPANY_ICON;
-          let collapsedIcon = COLLAPSE_COMPANY_ICON;
-          if (item.staff) {
-            expandIcon = EXPAND_STAFF_ICON;
-            collapsedIcon = COLLAPSE_STAFF_ICON;
-          } else {
-            expandIcon = EXPAND_COMPANY_ICON;
-            collapsedIcon = COLLAPSE_COMPANY_ICON;
-          }
-          debugger
           // console.log(123, this.attributes.name)
           // 高亮自定义节点
-          if (curState.includes("myHighlight")) {
+          if (curState.includes('myHighlight')) {
             // console.log(this.attributes.name, curState);
-            if (item.staff) {
-              this.upsert(
-                "shapeKey1",
-                // "circle",
-                "rect",
-                {
-                  stroke: "red",
-                },
-                this
-              );
+            if (item?.category === 'staff') {
+              this.upsert('staffShape', "rect", {
+                stroke: 'red',
+              }, this);
+            } else if (item?.category === 'rootCompany') {
+              this.upsert('rootCompanyShape', "rect", {
+                stroke: 'red',
+              }, this);
             } else {
-              this.upsert(
-                "shapeKey2",
-                "rect",
-                {
-                  stroke: "red",
-                },
-                this
-              );
+              this.upsert('commonShape', "rect", {
+                stroke: 'red',
+              }, this);
             }
-            // 高亮自定义节点
+            // 清除高亮自定义节点样式
           } else {
-            if (item.staff) {
-              this.upsert(
-                "shapeKey1",
-                // "circle",
-                "rect",
-                {
-                  stroke: "#4ea2f0",
-                },
-                this
-              );
+            if (item?.category === 'staff') {
+              this.upsert('staffShape', "rect", {
+                stroke: '#4ea2f0',
+              }, this);
+            } else if (item?.category === 'rootCompany') {
+              this.upsert('rootCompanyShape', "rect", {
+                stroke: '#ecc1e7',
+              }, this);
             } else {
-              this.upsert(
-                "shapeKey2",
-                "rect",
-                {
-                  stroke: "#4ea2f0",
-                },
-                this
-              );
+              this.upsert('commonShape', "rect", {
+                stroke: '#4ea2f0',
+              }, this);
             }
           }
           // 更新展开折叠图标
           // console.log("onUpdate_curState", this.attributes.name, curState)
           // 左
-          if (curState.includes("collapse1") || curState.includes("expand1")) {
-            this.upsert(
-              "shapeKey4",
-              "image",
-              {
-                src: curState.includes("collapse1")
-                  ? collapsedIcon
-                  : expandIcon,
-              },
-              this
-            );
+          if (curState.includes('collapse1') || curState.includes('expand1')) {
+            this.upsert('shapeKey4', "image", {
+              src: curState.includes('collapse1') ? COMPANY_EXPAND_ICON : COMPANY_COLLAPSE_ICON,
+            }, this);
             // 右
           }
-          if (curState.includes("collapse2") || curState.includes("expand2")) {
-            this.upsert(
-              "shapeKey5",
-              "image",
-              {
-                src: curState.includes("collapse2")
-                  ? collapsedIcon
-                  : expandIcon,
-              },
-              this
-            );
+          if (curState.includes('collapse2') || curState.includes('expand2')) {
+            this.upsert('shapeKey5', "image", {
+              src: curState.includes('collapse2') ? STAFF_EXPAND_ICON : STAFF_COLLAPSE_ICON,
+            }, this);
             // 中
           }
-          if (curState.includes("collapse3") || curState.includes("expand3")) {
-            this.upsert(
-              "shapeKey6",
-              "image",
-              {
-                src: curState.includes("collapse3")
-                  ? expandIcon
-                  : collapsedIcon,
-              },
-              this
-            );
+          if (curState.includes('collapse3') || curState.includes('expand3')) {
+            this.upsert('shapeKey6', "image", {
+              src: _this.getCollapseAndExpandIcon(curState.includes('collapse3'), this.attributes.name),
+              // src: curState.includes('collapse3') ? EXPAND_ICON : COLLAPSE_ICON,
+            }, this);
           }
         }
       }
@@ -863,25 +677,34 @@ export default {
           // const pointData = this.getEndpoints(attributes);
           let startPointX = sourcePoint[0];
           let endPointX = targetPoint[0];
-          const targetNodeModel = ghData.nodes.find(
-            (el) => el.id === attributes.targetNode
-          );
+          let startPointY = sourcePoint[1];
+          let endPointY = targetPoint[1];
+          const targetNodeModel = ghData.nodes.find(el => el.id === attributes.targetNode);
+          const sourceNodeModel = ghData.nodes.find(el => el.id === attributes.sourceNode);
+          // 偏移量
+          const offset = 30
           if (_this.checkCompanyNodeAndStaffNodeExist(attributes.sourceNode)) {
-            // 偏移量
-            const offset = 30;
             // 员工节点
-            if (targetNodeModel?.staff) {
-              startPointX += rectShapeWidth / 2 - offset;
+            if (targetNodeModel?.category === 'staff') {
+              startPointX += rectShapeWidth / 2 - offset
             } else {
-              startPointX -= rectShapeWidth / 2 - offset;
+              startPointX -= rectShapeWidth / 2 - offset
+            }
+
+            // todo根公司下同时有员工节点和公司节点
+          } else {
+            // 根公司
+            if (sourceNodeModel?.category === 'rootCompany') {
+              startPointY += (rootCompanyShapeHeight - rectShapeHeight);
+              startPointX += (rootCompanyShapeWidth - rectShapeWidth) / 2
             }
           }
-          // console.log(pointData, attributes.name)
+
           return [
-            ["M", startPointX, sourcePoint[1]],
+            ['M', startPointX, startPointY],
             // ['L', targetPoint[0] / 2 + (1 / 2) * sourcePoint[0], sourcePoint[1]],
             // ['L', targetPoint[0] / 2 + (1 / 2) * sourcePoint[0], targetPoint[1]],
-            ["L", endPointX, targetPoint[1]],
+            ['L', endPointX, endPointY],
           ];
           // return [
           //   ['M', sourcePoint[0], sourcePoint[1]],
@@ -892,43 +715,26 @@ export default {
         }
       }
 
-      class SelfHtmlNode1 extends HTML {
-        getKeyStyle(attributes) {
-          return { ...super.getKeyStyle(attributes), r: attributes.radius };
-        }
-
-        // 重写方法
-        drawKeyShape(attributes, container) {
-          // 自定义绘制逻辑，创建一个 G.Circle
-          return this.upsert(
-            "htmlKey",
-            HTML,
-            this.getKeyStyle(attributes),
-            container
-          );
-        }
-      }
-
-      register(ExtensionCategory.NODE, "self-Node1", SelfNode1);
-      register(ExtensionCategory.EDGE, "custom-polyline", PolylineEdge);
-      register(ExtensionCategory.EDGE, "custom-NodeHtml1", SelfHtmlNode1);
+      register(ExtensionCategory.NODE, 'self-Node1', SelfNode1);
+      register(ExtensionCategory.EDGE, 'custom-polyline', PolylineEdge);
 
       graph = new Graph({
-        autoFit: "center",
+        autoFit: 'center',
         animation: false,
-        container: "mountNode4",
+        container: 'mountNode4',
         data: curOriginDta,
         // data: ghData,
         node: {
-          type: "self-Node1",
+          type: 'self-Node1',
           style: {
             size: [rectShapeWidth, rectShapeHeight],
             // size: [60, 30],
             fillOpacity: 0,
             // d代表节点数据
             name: (d) => d.id,
+            nodeData: (d) => d,
             // 默认将线的起点归拢在一起
-            ports: [{ placement: "top" }, { placement: "bottom" }],
+            ports: [{ placement: 'top' }, { placement: 'bottom' }],
           },
           // state: {
           //   myHighlight: {
@@ -940,25 +746,22 @@ export default {
           //   [0.5, 0],
           //   [0.5, 1]
           // ],
-          // palette: {
-          //   field: (d) => d.combo,
-          // },
           palette: {
-            field: "cluster",
+            field: (d) => d.combo,
           },
         },
         edge: {
-          type: "custom-polyline",
+          type: 'custom-polyline',
           style: {
             // startArrow: true,
-            stroke: "#a7d1f8",
+            stroke: '#a7d1f8',
             endArrow: true,
             name: (d) => d.id,
             // stroke: '#F6BD16',
           },
           state: {
             myHighlight: {
-              stroke: "red",
+              stroke: 'red',
               // lineWidth: 3,
             },
           },
@@ -970,45 +773,24 @@ export default {
         //   },
         // },
         combo: {
-          type: "rect",
+          type: 'rect',
           style: {
             radius: 8,
             labelText: (d) => d.id,
           },
         },
         layout: {
-          type: "antv-dagre",
-          // ranksep: 100,
-          ranksepFunc:(node)=>{
-            if(node.data.category === 'rootCompany' || node.id==="subTree1-1-1"){
-              return 100
-            }else{
-              return 50
-            }
-          },
-          nodesep: 20,
+          type: 'antv-dagre',
+          ranksep: 50,
+          nodesep: 5,
           sortByCombo: true,
         },
-        behaviors: [
-          "drag-element",
-          "drag-canvas",
-          "zoom-canvas",
-          "zoom-canvas",
-        ],
-        plugins: [
-          {
-            type: "legend",
-            nodeField: "cluster",
-            edgeField: "cluster",
-            trigger: "click",
-          },
-        ],
+        behaviors: ['drag-element'],
       });
 
       await graph.render();
 
       graph.on(NodeEvent.CLICK, (event) => {
-        debugger;
         const { target, originalTarget } = event;
         const curShapeKey = originalTarget.attributes.class;
         let curNodeId = target.id;
@@ -1020,44 +802,42 @@ export default {
         // 左 公司
         if (curShapeKey === "shapeKey4") {
           // 当前是折叠 需要展开
-          if (curState.includes("collapse1")) {
-            let curAddEdges = edges.filter((el) => {
-              let curN = nodes.find((item) => item.id === el.target);
-              return el.source === curNodeId && !curN?.staff;
+          if (curState.includes('collapse1')) {
+            let curAddEdges = edges.filter(el => {
+              let curN = nodes.find(item => item.id === el.target);
+              return el.source === curNodeId && curN?.category !== 'staff'
             });
-            let targetIds = curAddEdges.map((el) => el.target);
-            let curAddNodes = nodes.filter((el) => targetIds.includes(el.id));
+            let targetIds = curAddEdges.map(el => el.target);
+            let curAddNodes = nodes.filter(el => targetIds.includes(el.id));
 
             // 判断节点是否有与现有的是否重复，有的话需要过滤掉，因为可能存在多条边连接同一个节点的情况
             const allData = graph.getData();
-            curAddNodes = curAddNodes.filter((el) => {
-              const node = allData.nodes.find((item) => item.id === el.id);
+            curAddNodes = curAddNodes.filter(el => {
+              const node = allData.nodes.find(item => item.id === el.id);
               return !node;
-            });
+            })
 
             const curAddGData = {
               nodes: curAddNodes,
               edges: curAddEdges,
-            };
+            }
 
-            curState = curState.filter((el) => el !== "collapse1");
-            curState.push("expand1");
+            curState = curState.filter(el => el !== 'collapse1');
+            curState.push('expand1')
             graph.setElementState({
-              [curNodeId]: curState,
+              [curNodeId]: curState
             });
             // console.log("curState2", graph.getElementState(curNodeId))
             // graph.setData(curGData);
-            console.log("curAddGData", curAddGData);
+            console.log("curAddGData", curAddGData)
 
             // 新增combs
-            let combsIds = curAddNodes
-              .filter((el) => el.combo)
-              .map((el) => el.combo);
+            let combsIds = curAddNodes.filter(el => el.combo).map(el => el.combo);
             if (combsIds.length > 0) {
-              let allCombsDataIds = graph.getComboData().map((el) => el.id);
-              combsIds = combsIds.filter((el) => !allCombsDataIds.includes(el));
-              const addCombs = combos.filter((el) => combsIds.includes(el.id));
-              console.log("addCombs", addCombs);
+              let allCombsDataIds = graph.getComboData().map(el => el.id);
+              combsIds = combsIds.filter(el => !allCombsDataIds.includes(el));
+              const addCombs = combos.filter(el => combsIds.includes(el.id))
+              console.log("addCombs", addCombs)
               if (addCombs.length > 0) {
                 graph.addComboData(addCombs);
               }
@@ -1066,7 +846,7 @@ export default {
             graph.addData(curAddGData);
 
             // 设置叶子节点折叠状态
-            this.setLeafColAndExpandState();
+            this.setLeafColAndExpandState()
 
             graph.render();
 
@@ -1076,43 +856,33 @@ export default {
             const curGrahData = graph.getData();
             // const sourceEdgesIds = edges.filter(el => el.source === curNodeId);
             // 找到该节点下的的下一层公司节点，再找出这些公司节点下的所有节点，将这些节点都移除
-            let nextLevelNodes = curGrahData.edges
-              .filter((el) => el.source === curNodeId)
-              .map((el) => el.target);
-            nextLevelNodes = nextLevelNodes.filter((el) => {
-              let item = curGrahData.nodes.find((ele) => ele.id === el);
-              return !item?.staff;
-            });
+            let nextLevelNodes = curGrahData.edges.filter(el => el.source === curNodeId).map(el => el.target);
+            nextLevelNodes = nextLevelNodes.filter(el => {
+              let item = curGrahData.nodes.find(ele => ele.id === el);
+              return item?.category !== 'staff';
+            })
             let allChildNodesIds = [];
-            nextLevelNodes.forEach((el) => {
-              let curChildNodes = this.findChildrenByEdges(
-                el,
-                curGrahData.edges
-              );
+            nextLevelNodes.forEach(el => {
+              let curChildNodes = this.findChildrenByEdges(el, curGrahData.edges);
               allChildNodesIds = allChildNodesIds.concat(curChildNodes);
-            });
+            })
+
 
             allChildNodesIds = allChildNodesIds.concat(nextLevelNodes);
-            allChildNodesIds = [...new Set(allChildNodesIds)];
+            allChildNodesIds = [...new Set(allChildNodesIds)]
 
-            curState = curState.filter((el) => el !== "expand1");
-            curState.push("collapse1");
+            curState = curState.filter(el => el !== 'expand1');
+            curState.push('collapse1')
             graph.setElementState({
-              [curNodeId]: curState,
+              [curNodeId]: curState
             });
 
             // 移除combs
-            const leftAllNodes = curGrahData.nodes.filter(
-              (el) => !allChildNodesIds.includes(el.id)
-            );
-            const leftCombIds = leftAllNodes
-              .filter((el) => el.combo)
-              .map((el) => el.combo);
+            const leftAllNodes = curGrahData.nodes.filter(el => !allChildNodesIds.includes(el.id));
+            const leftCombIds = leftAllNodes.filter(el => el.combo).map(el => el.combo);
             const allCombsData = graph.getComboData();
-            const allCombsDataIds = allCombsData.map((el) => el.id);
-            const diffCombsIds = allCombsDataIds.filter(
-              (ele) => !leftCombIds.includes(ele)
-            );
+            const allCombsDataIds = allCombsData.map(el => el.id);
+            const diffCombsIds = allCombsDataIds.filter(ele => !leftCombIds.includes(ele))
             if (diffCombsIds.length > 0) {
               graph.removeComboData(diffCombsIds);
             }
@@ -1120,47 +890,45 @@ export default {
             graph.removeNodeData(allChildNodesIds);
 
             // 设置叶子节点折叠状态
-            this.setLeafColAndExpandState();
+            this.setLeafColAndExpandState()
             graph.render();
           }
           // 右 员工
         } else if (curShapeKey === "shapeKey5") {
           // 当前是折叠 需要展开
-          if (curState.includes("collapse2")) {
-            let curAddEdges = edges.filter((el) => {
-              let curN = nodes.find((item) => item.id === el.target);
-              return el.source === curNodeId && curN?.staff;
+          if (curState.includes('collapse2')) {
+            let curAddEdges = edges.filter(el => {
+              let curN = nodes.find(item => item.id === el.target);
+              return el.source === curNodeId && curN?.category === 'staff'
             });
-            let targetIds = curAddEdges.map((el) => el.target);
-            let curAddNodes = nodes.filter((el) => targetIds.includes(el.id));
+            let targetIds = curAddEdges.map(el => el.target);
+            let curAddNodes = nodes.filter(el => targetIds.includes(el.id));
 
             // 判断节点是否有与现有的是否重复，有的话需要过滤掉，因为可能存在多条边连接同一个节点的情况
             const allData = graph.getData();
-            curAddNodes = curAddNodes.filter((el) => {
-              const node = allData.nodes.find((item) => item.id === el.id);
+            curAddNodes = curAddNodes.filter(el => {
+              const node = allData.nodes.find(item => item.id === el.id);
               return !node;
-            });
+            })
 
             const curAddGData = {
               nodes: curAddNodes,
               edges: curAddEdges,
-            };
-            curState = curState.filter((el) => el !== "collapse2");
-            curState.push("expand2");
+            }
+            curState = curState.filter(el => el !== 'collapse2');
+            curState.push('expand2')
             graph.setElementState({
-              [curNodeId]: curState,
+              [curNodeId]: curState
             });
-            console.log("curAddGData", curAddGData);
+            console.log("curAddGData", curAddGData)
 
             // 新增combs
-            let combsIds = curAddNodes
-              .filter((el) => el.combo)
-              .map((el) => el.combo);
+            let combsIds = curAddNodes.filter(el => el.combo).map(el => el.combo);
             if (combsIds.length > 0) {
-              let allCombsDataIds = graph.getComboData().map((el) => el.id);
-              combsIds = combsIds.filter((el) => !allCombsDataIds.includes(el));
-              const addCombs = combos.filter((el) => combsIds.includes(el.id));
-              console.log("addCombs", addCombs);
+              let allCombsDataIds = graph.getComboData().map(el => el.id);
+              combsIds = combsIds.filter(el => !allCombsDataIds.includes(el));
+              const addCombs = combos.filter(el => combsIds.includes(el.id))
+              console.log("addCombs", addCombs)
               if (addCombs.length > 0) {
                 graph.addComboData(addCombs);
               }
@@ -1169,7 +937,7 @@ export default {
             graph.addData(curAddGData);
 
             // 设置叶子节点折叠状态
-            this.setLeafColAndExpandState();
+            this.setLeafColAndExpandState()
             graph.render();
           } else {
             // 获取当前所有数据
@@ -1177,43 +945,32 @@ export default {
             const curGrahData = graph.getData();
             // const sourceEdgesIds = edges.filter(el => el.source === curNodeId);
             // 找到该节点下的的下一层员工节点，再找出这些员工节点下的所有节点，将这些节点都移除
-            let nextLevelNodes = curGrahData.edges
-              .filter((el) => el.source === curNodeId)
-              .map((el) => el.target);
-            nextLevelNodes = nextLevelNodes.filter((el) => {
-              let item = curGrahData.nodes.find((ele) => ele.id === el);
-              return item?.staff;
-            });
+            let nextLevelNodes = curGrahData.edges.filter(el => el.source === curNodeId).map(el => el.target);
+            nextLevelNodes = nextLevelNodes.filter(el => {
+              let item = curGrahData.nodes.find(ele => ele.id === el);
+              return item?.category === 'staff';
+            })
             let allChildNodesIds = [];
-            nextLevelNodes.forEach((el) => {
-              let curChildNodes = this.findChildrenByEdges(
-                el,
-                curGrahData.edges
-              );
+            nextLevelNodes.forEach(el => {
+              let curChildNodes = this.findChildrenByEdges(el, curGrahData.edges);
               allChildNodesIds = allChildNodesIds.concat(curChildNodes);
-            });
+            })
 
             allChildNodesIds = allChildNodesIds.concat(nextLevelNodes);
-            allChildNodesIds = [...new Set(allChildNodesIds)];
+            allChildNodesIds = [...new Set(allChildNodesIds)]
 
-            curState = curState.filter((el) => el !== "expand2");
-            curState.push("collapse2");
+            curState = curState.filter(el => el !== 'expand2');
+            curState.push('collapse2')
             graph.setElementState({
-              [curNodeId]: curState,
+              [curNodeId]: curState
             });
 
             // 移除combs
-            const leftAllNodes = curGrahData.nodes.filter(
-              (el) => !allChildNodesIds.includes(el.id)
-            );
-            const leftCombIds = leftAllNodes
-              .filter((el) => el.combo)
-              .map((el) => el.combo);
+            const leftAllNodes = curGrahData.nodes.filter(el => !allChildNodesIds.includes(el.id));
+            const leftCombIds = leftAllNodes.filter(el => el.combo).map(el => el.combo);
             const allCombsData = graph.getComboData();
-            const allCombsDataIds = allCombsData.map((el) => el.id);
-            const diffCombsIds = allCombsDataIds.filter(
-              (ele) => !leftCombIds.includes(ele)
-            );
+            const allCombsDataIds = allCombsData.map(el => el.id);
+            const diffCombsIds = allCombsDataIds.filter(ele => !leftCombIds.includes(ele))
             if (diffCombsIds.length > 0) {
               graph.removeComboData(diffCombsIds);
             }
@@ -1224,41 +981,39 @@ export default {
           // 中 全部
         } else if (curShapeKey === "shapeKey6") {
           // 当前是折叠 需要展开
-          if (curState.includes("collapse3")) {
-            let curAddEdges = edges.filter((el) => {
-              let curN = nodes.find((item) => item.id === el.target);
-              return el.source === curNodeId;
+          if (curState.includes('collapse3')) {
+            let curAddEdges = edges.filter(el => {
+              let curN = nodes.find(item => item.id === el.target);
+              return el.source === curNodeId
             });
-            let targetIds = curAddEdges.map((el) => el.target);
-            let curAddNodes = nodes.filter((el) => targetIds.includes(el.id));
+            let targetIds = curAddEdges.map(el => el.target);
+            let curAddNodes = nodes.filter(el => targetIds.includes(el.id));
 
             // 判断节点是否有与现有的是否重复，有的话需要过滤掉，因为可能存在多条边连接同一个节点的情况
             const allData = graph.getData();
-            curAddNodes = curAddNodes.filter((el) => {
-              const node = allData.nodes.find((item) => item.id === el.id);
+            curAddNodes = curAddNodes.filter(el => {
+              const node = allData.nodes.find(item => item.id === el.id);
               return !node;
-            });
+            })
 
             const curAddGData = {
               nodes: curAddNodes,
               edges: curAddEdges,
-            };
-            curState = curState.filter((el) => el !== "collapse3");
-            curState.push("expand3");
+            }
+            curState = curState.filter(el => el !== 'collapse3');
+            curState.push('expand3')
             graph.setElementState({
-              [curNodeId]: curState,
+              [curNodeId]: curState
             });
-            console.log("curAddGData", curAddGData);
+            console.log("curAddGData", curAddGData)
 
             // 新增combs
-            let combsIds = curAddNodes
-              .filter((el) => el.combo)
-              .map((el) => el.combo);
+            let combsIds = curAddNodes.filter(el => el.combo).map(el => el.combo);
             if (combsIds.length > 0) {
-              let allCombsDataIds = graph.getComboData().map((el) => el.id);
-              combsIds = combsIds.filter((el) => !allCombsDataIds.includes(el));
-              const addCombs = combos.filter((el) => combsIds.includes(el.id));
-              console.log("addCombs", addCombs);
+              let allCombsDataIds = graph.getComboData().map(el => el.id);
+              combsIds = combsIds.filter(el => !allCombsDataIds.includes(el));
+              const addCombs = combos.filter(el => combsIds.includes(el.id))
+              console.log("addCombs", addCombs)
               if (addCombs.length > 0) {
                 graph.addComboData(addCombs);
               }
@@ -1267,37 +1022,29 @@ export default {
             graph.addData(curAddGData);
 
             // 设置叶子节点折叠状态
-            this.setLeafColAndExpandState();
+            this.setLeafColAndExpandState()
             graph.render();
+
           } else {
             // 获取当前所有数据
             const curGrahData = graph.getData();
             // const sourceEdgesIds = edges.filter(el => el.source === curNodeId);
             // 找到该节点下的所有公司节点并移除
-            let allChildNodesIds = this.findChildrenByEdges(
-              curNodeId,
-              curGrahData.edges
-            );
-            allChildNodesIds = [...new Set(allChildNodesIds)];
+            let allChildNodesIds = this.findChildrenByEdges(curNodeId, curGrahData.edges);
+            allChildNodesIds = [...new Set(allChildNodesIds)]
 
-            curState = curState.filter((el) => el !== "expand3");
-            curState.push("collapse3");
+            curState = curState.filter(el => el !== 'expand3');
+            curState.push('collapse3')
             graph.setElementState({
-              [curNodeId]: curState,
+              [curNodeId]: curState
             });
 
             // 移除combs
-            const leftAllNodes = curGrahData.nodes.filter(
-              (el) => !allChildNodesIds.includes(el.id)
-            );
-            const leftCombIds = leftAllNodes
-              .filter((el) => el.combo)
-              .map((el) => el.combo);
+            const leftAllNodes = curGrahData.nodes.filter(el => !allChildNodesIds.includes(el.id));
+            const leftCombIds = leftAllNodes.filter(el => el.combo).map(el => el.combo);
             const allCombsData = graph.getComboData();
-            const allCombsDataIds = allCombsData.map((el) => el.id);
-            const diffCombsIds = allCombsDataIds.filter(
-              (ele) => !leftCombIds.includes(ele)
-            );
+            const allCombsDataIds = allCombsData.map(el => el.id);
+            const diffCombsIds = allCombsDataIds.filter(ele => !leftCombIds.includes(ele))
             if (diffCombsIds.length > 0) {
               graph.removeComboData(diffCombsIds);
             }
@@ -1305,23 +1052,12 @@ export default {
             graph.removeNodeData(allChildNodesIds);
             graph.render();
           }
+
         }
-        console.log(11, target.id);
-        console.log(11, event);
+        console.log(11, target.id)
+        console.log(11, event)
       });
-    },
-    inputChange(val) {
-      if (val) {
-        // 全收起
-        graph.destroy();
-        const curData = this.findNodesAtDepth();
-        this.initGraph(curData);
-      } else {
-        // 全展开
-        graph.destroy();
-        this.initGraph(_.cloneDeep(ghData));
-      }
-    },
+    }
   },
   mounted() {
     const curData = this.findNodesAtDepth();
@@ -1333,10 +1069,22 @@ export default {
     //   graph.destroy()
     //   console.log("销毁画布。1")
     // }
-  },
-};
+  }
+}
 </script>
 <style lang="scss" scoped>
-.demo4Page {
+.demo4Page {}
+</style>
+<style lang="scss">
+.rootCompanyTextShapeCssClass {
+  font-size: 12px;
+  color: #000;
+  background: transparent;
+  // width: 100%;
+  // height: 100%;
+  // display: flex;
+  // align-items: center;
+  // justify-content: flex-start;
+  padding: 2px 4px;
 }
 </style>

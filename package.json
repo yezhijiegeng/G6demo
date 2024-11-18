@@ -8,8 +8,11 @@
   },
   "dependencies": {
     "@antv/g6": "^4.8.21",
+    "@tencent/common-menus": "^1.0.20",
     "core-js": "^3.8.3",
     "element-ui": "^2.15.14",
+    "quill": "^2.0.2",
+    "quill-delta": "^5.1.0",
     "relation-graph": "^2.2.7",
     "url": "^0.11.4",
     "vue": "^2.6.14",

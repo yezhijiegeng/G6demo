@@ -10,7 +10,7 @@
 <script>
 import Quill from 'quill';
 import Delta from 'quill-delta';
-import { InlineBlot, register } from 'parchment';
+// import { InlineBlot, register } from 'parchment';
 let quillEditor = null;
 export default {
   name: 'demo6',
