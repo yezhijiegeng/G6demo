@@ -17,7 +17,7 @@
 import { ExtensionCategory, Graph, Rect, BaseEdge, Line, register, NodeEvent } from '@/assets/js/g6V5.min';
 // import { Rect as RectGeometry, text } from '@antv/g';
 // import { GNode, Group, Image, Rect, Text } from '@antv/g6-extension-react';
-import ghData from '../../mockData/dataGraph4_3'
+import ghData from '../mockData/dataGraph4_3'
 import _ from 'lodash'
 // const COLLAPSE_ICON = require('@/assets/images/collapse.png');
 // const EXPAND_ICON = require('@/assets/images/expand.png');

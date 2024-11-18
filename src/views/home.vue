@@ -73,9 +73,59 @@ export default {
       ],
       tDemoList: [
         {
-          id: 't1',
-          title: 'demo1',
-          component: () => import('./tDemos/demo1.vue')
+          id: 'groupView',
+          title: 'groupView',
+          component: () => import('./tDemos/groupView/index.vue')
+        },
+        {
+          id: 'g6V5Base',
+          title: 'g6V5Base',
+          component: () => import('./tDemos/g6V5/base/index.vue')
+        },
+        {
+          id: 'test',
+          title: 'test',
+          component: () => import('./tDemos/test/index.vue')
+        },
+        {
+          id: 'groupOverview',
+          title: 'groupOverview',
+          component: () => import('./tDemos/groupOverview/index.vue')
+        },
+        {
+          id: 'comboRelatedLayout',
+          title: 'comboRelatedLayout',
+          component: () => import('./tDemos/comboRelatedLayout/index.vue')
+        },
+        {
+          id: 'comboCombined',
+          title: 'comboCombined',
+          component: () => import('./tDemos/combo/comboCombined/index.vue')
+        },
+        {
+          id: 'comboOverview',
+          title: 'comboOverview',
+          component: () => import('./tDemos/combo/comboOverview/index.vue')
+        },
+        {
+          id: 'comboRelatedLayout',
+          title: 'comboRelatedLayout',
+          component: () => import('./tDemos/comboRelatedLayout/index.vue')
+        },
+        {
+          id: 'relationGraph',
+          title: 'relationGraph',
+          component: () => import('./tDemos/relationGraph/index.vue')
+        },
+        {
+          id: 'graphDetail',
+          title: 'graphDetail',
+          component: () => import('./tDemos/relationGraph/graphDetail/index.vue')
+        },
+        {
+          id: 'nodeDetailsFloatBox',
+          title: 'nodeDetailsFloatBox',
+          component: () => import('./tDemos/relationGraph/nodeDetailsFloatBox/index.vue')
         },
       ],
     }
