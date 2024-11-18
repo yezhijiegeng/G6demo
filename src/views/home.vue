@@ -17,7 +17,7 @@
           <el-submenu index="du">
             <template slot="title">
               <i class="el-icon-document"></i>
-              <span>DDemo</span>
+              <span>dDemo</span>
             </template>
             <el-menu-item :index="item.id" v-for="(item, index) in ddemoList" :key="index">
               <span slot="title">{{ item.title }}</span>
