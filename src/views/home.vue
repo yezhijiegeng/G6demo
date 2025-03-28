@@ -161,6 +161,16 @@ export default {
           component: () => import("./tDemos/g6V5/g6v5_select.vue"),
         },
         {
+          id: "g6v5_legend",
+          title: "图例",
+          component: () => import("./tDemos/g6V5/g6v5Legend.vue"),
+        },
+        {
+          id: "relations",
+          title: "关系图谱",
+          component: () => import("./tDemos/relations/index.vue"),
+        },
+        {
           id: "g6v5_demo4",
           title: "g6v5_demo4",
           component: () => import("./tDemos/g6V5/g6v5Demo4.vue"),

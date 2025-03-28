@@ -44,7 +44,7 @@ export default {
   },
   inject: ["menuList"],
 	mounted(){
-		debugger
+		
 	},
 };
 </script>
